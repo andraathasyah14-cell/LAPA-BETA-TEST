@@ -16,7 +16,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogTrigger,
   DialogFooter,
   DialogClose,
@@ -51,6 +50,9 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import type { Country, News, Comment } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { db } from '@/lib/firebase';
+import { collection, onSnapshot, query, orderBy, doc, updateDoc, arrayUnion, Timestamp, addDoc, getDocs, where, setDoc } from 'firebase/firestore';
+
 
 const TermsOfServiceModal = ({ isOpen, onAccept }: { isOpen: boolean; onAccept: () => void }) => {
   if (!isOpen) return null;
@@ -107,18 +109,47 @@ const RegisterCountryForm = ({
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newCountry: Country = {
-      id: crypto.randomUUID(),
+    
+    const countriesRef = collection(db, 'countries');
+    const q = query(countriesRef, where("countryName", "==", countryName));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      toast({
+        variant: "destructive",
+        title: "Pendaftaran Gagal",
+        description: `Negara dengan nama "${countryName}" sudah terdaftar.`,
+      });
+      return;
+    }
+
+    const newCountryData: Omit<Country, 'id'> = {
       countryName,
       ownerName,
       registrationDate: new Date().toISOString(),
     };
-    onCountryRegistered(newCountry);
-    setCountryName('');
-    setOwnerName('');
-    setOpen(false);
+
+    try {
+      const docRef = await addDoc(countriesRef, newCountryData);
+      const newCountry = { id: docRef.id, ...newCountryData };
+      onCountryRegistered(newCountry);
+      setCountryName('');
+      setOwnerName('');
+      setOpen(false);
+       toast({
+        title: "Pendaftaran Berhasil",
+        description: `Negara "${countryName}" berhasil didaftarkan.`,
+      });
+    } catch (error) {
+      console.error("Error registering country: ", error);
+      toast({
+        variant: "destructive",
+        title: "Pendaftaran Gagal",
+        description: "Terjadi kesalahan. Coba lagi nanti.",
+      });
+    }
   };
 
   return (
@@ -160,34 +191,38 @@ const RegisterCountryForm = ({
   );
 };
 
-const NewsCard = ({ news, userCountry, onNewsUpdate }: { news: News, userCountry: Country | null, onNewsUpdate: (updatedNews: News) => void }) => {
+const NewsCard = ({ news, userCountry }: { news: News, userCountry: Country | null }) => {
   const [showComments, setShowComments] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [newComment, setNewComment] = React.useState('');
   
-  const handleLike = () => {
-      const updatedNews = { ...news, likes: news.likes + 1 };
-      onNewsUpdate(updatedNews);
+  const handleLike = async () => {
+      const newsRef = doc(db, 'news', news.id);
+      await updateDoc(newsRef, {
+        likes: news.likes + 1
+      });
   };
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || !userCountry) return;
 
-    const comment: Comment = {
-      id: crypto.randomUUID(),
+    const comment: Omit<Comment, 'id'> = {
       author: userCountry?.countryName || 'Pengguna Anonim',
       text: newComment,
-      timestamp: new Date().toISOString()
+      timestamp: Timestamp.now()
     };
     
-    const updatedNews = { ...news, comments: [comment, ...news.comments] };
-    onNewsUpdate(updatedNews);
+    const newsRef = doc(db, 'news', news.id);
+    await updateDoc(newsRef, {
+        comments: arrayUnion({ id: crypto.randomUUID(), ...comment})
+    });
     setNewComment('');
   }
   
-  const timeAgo = (timestamp: string) => {
-    return formatDistanceToNow(new Date(timestamp), { addSuffix: true, locale: id });
+  const timeAgo = (timestamp: Timestamp | string) => {
+    const date = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp);
+    return formatDistanceToNow(date, { addSuffix: true, locale: id });
   }
 
   return (
@@ -331,73 +366,46 @@ export default function Home() {
 
 
   React.useEffect(() => {
-    // Terms of Service Modal
     const termsAccepted = localStorage.getItem('termsAccepted');
-    if (!termsAccepted) {
-      setShowTermsModal(true);
-    }
+    if (!termsAccepted) setShowTermsModal(true);
 
-    // Unregistered user alert
     const alertDismissed = localStorage.getItem('unregisteredAlertDismissed');
-    if (alertDismissed !== 'true') {
-      setIsAlertDismissed(false);
-    }
-    
-    // Dev info modal
-    const devInfoDismissed = sessionStorage.getItem('devInfoDismissed');
-    if (!devInfoDismissed) {
-      setShowDevInfoModal(true);
-    }
+    if (alertDismissed === 'true') setIsAlertDismissed(true); else setIsAlertDismissed(false);
 
-    // Load countries from localStorage
-    const storedCountries = localStorage.getItem('countries');
-    const initialCountries = storedCountries ? JSON.parse(storedCountries) : [
-      { id: '1', countryName: 'Republik Lapa', ownerName: 'John Doe', registrationDate: new Date().toISOString() },
-      { id: '2', countryName: 'Kerajaan Bikar', ownerName: 'Jane Smith', registrationDate: new Date().toISOString() },
-    ];
-    setCountries(initialCountries);
-    if (!storedCountries) {
-      localStorage.setItem('countries', JSON.stringify(initialCountries));
-    }
-    
+    const devInfoDismissed = sessionStorage.getItem('devInfoDismissed');
+    if (!devInfoDismissed) setShowDevInfoModal(true);
+
     const storedUserCountry = localStorage.getItem('userCountry');
     if (storedUserCountry) {
-        setUserCountry(JSON.parse(storedUserCountry));
+        const country: Country = JSON.parse(storedUserCountry);
+        setUserCountry(country);
     }
+  }, []);
 
+  React.useEffect(() => {
+    const q = query(collection(db, 'news'), orderBy('timestamp', 'desc'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const news = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as News));
+      setNewsList(news);
+    });
+    return () => unsubscribe();
+  }, []);
+  
+  React.useEffect(() => {
+    const q = query(collection(db, 'globalComments'), orderBy('timestamp', 'desc'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const comments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comment));
+      setGlobalComments(comments);
+    });
+    return () => unsubscribe();
+  }, []);
 
-    // Load global comments from localStorage
-    const storedGlobalComments = localStorage.getItem('globalComments');
-    if (storedGlobalComments) {
-      setGlobalComments(JSON.parse(storedGlobalComments));
-    }
-
-
-    // Load news from localStorage
-    const storedNews = localStorage.getItem('news');
-    const initialNews: News[] = storedNews ? JSON.parse(storedNews) : [
-       { 
-         id: '1', 
-         title: 'Negara X Resmi Mengubah Konstitusi 2025', 
-         description: `Dalam sebuah pengumuman bersejarah, pemerintah Negara X mengumumkan adopsi Konstitusi 2025 yang baru, menggantikan undang-undang dasar sebelumnya. Langkah ini dipandang sebagai momen transformatif dalam sejarah bangsa, yang bertujuan untuk memperkuat demokrasi, hak asasi manusia, dan pembangunan berkelanjutan. Konstitusi baru ini mencakup beberapa perubahan fundamental, termasuk pengakuan hak-hak minoritas yang lebih luas, pembentukan lembaga anti-korupsi independen, dan komitmen yang lebih kuat terhadap perlindungan lingkungan. Presiden Negara X menyatakan bahwa konstitusi ini adalah 'fajar baru bagi bangsa kita', sementara kelompok oposisi menyuarakan keprihatinan tentang potensi pemusatan kekuasaan. Debat publik diperkirakan akan terus berlanjut seiring negara ini memasuki babak baru dalam pemerintahannya.`,
-         imageUrl: 'https://picsum.photos/seed/politics/1200/400',
-         imageHint: 'political assembly',
-         authorCountry: initialCountries[0],
-         taggedCountry: undefined,
-         isMapUpdate: true,
-         timestamp: new Date(Date.now() - 3600 * 1000).toISOString(),
-         likes: 12,
-         comments: [
-            { id: '1', author: 'Pemimpin Negara Y', text: 'Langkah yang sangat berani dari Negara X. Kami akan mengamati perkembangan ini dengan cermat.', timestamp: new Date(Date.now() - 1200 * 1000).toISOString()}
-         ],
-         newsType: 'domestik',
-       }
-    ];
-    setNewsList(initialNews.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
-     if (!storedNews) {
-      localStorage.setItem('news', JSON.stringify(initialNews));
-    }
-
+  React.useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'countries'), (snapshot) => {
+      const countryList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Country));
+      setCountries(countryList);
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleDismissDevInfo = () => {
@@ -414,58 +422,50 @@ export default function Home() {
     localStorage.setItem('unregisteredAlertDismissed', 'true');
     setIsAlertDismissed(true);
   }
-  
-  const handleNewsUpdate = (updatedNews: News) => {
-    const updatedList = newsList.map(news => news.id === updatedNews.id ? updatedNews : news);
-    setNewsList(updatedList.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
-    localStorage.setItem('news', JSON.stringify(updatedList));
-  };
-
 
   const handleCountryRegistered = (country: Country) => {
-    if (countries.some(c => c.countryName.toLowerCase() === country.countryName.toLowerCase())) {
-        toast({
-            variant: "destructive",
-            title: "Pendaftaran Gagal",
-            description: `Negara dengan nama "${country.countryName}" sudah terdaftar.`,
-        })
-        return;
-    }
-    const updatedCountries = [...countries, country];
-    setCountries(updatedCountries);
-    localStorage.setItem('countries', JSON.stringify(updatedCountries));
     setUserCountry(country);
     localStorage.setItem('userCountry', JSON.stringify(country));
   };
 
-  const handleGlobalCommentSubmit = (e: React.FormEvent) => {
+  const handleGlobalCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newGlobalComment.trim()) return;
+    if (!newGlobalComment.trim() || !userCountry) {
+       if (!userCountry) {
+         toast({
+           variant: 'destructive',
+           title: 'Gagal Mengirim Komentar',
+           description: 'Anda harus terdaftar sebagai negara untuk mengirim komentar global.'
+         })
+       }
+      return;
+    }
 
-    const comment: Comment = {
-      id: crypto.randomUUID(),
-      author: userCountry?.countryName || 'Pengguna Anonim',
+    const comment: Omit<Comment, 'id'> = {
+      author: userCountry.countryName,
       text: newGlobalComment,
-      timestamp: new Date().toISOString()
+      timestamp: Timestamp.now()
     };
 
-    const updatedComments = [comment, ...globalComments];
-    setGlobalComments(updatedComments);
-    localStorage.setItem('globalComments', JSON.stringify(updatedComments));
+    await addDoc(collection(db, "globalComments"), comment);
     setNewGlobalComment('');
   }
   
-  const timeAgo = (timestamp: string) => {
-    return formatDistanceToNow(new Date(timestamp), { addSuffix: true, locale: id });
+  const timeAgo = (timestamp: Timestamp | string) => {
+     const date = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp);
+    return formatDistanceToNow(date, { addSuffix: true, locale: id });
   }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
        <TermsOfServiceModal isOpen={showTermsModal} onAccept={handleAcceptTerms} />
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-header-background px-4 text-header-foreground md:px-6">
-        <div className="flex items-center gap-2">
-          <Landmark className="h-6 w-6" />
-          <h1 className="text-xl font-bold">United Lapa Nations</h1>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Landmark className="h-6 w-6" />
+            <h1 className="text-xl font-bold">United Lapa Nations</h1>
+          </div>
+          <Badge variant="secondary">BETA</Badge>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -530,8 +530,7 @@ export default function Home() {
                     <NewsCard 
                         key={news.id} 
                         news={news} 
-                        userCountry={userCountry} 
-                        onNewsUpdate={handleNewsUpdate} 
+                        userCountry={userCountry}
                     />
                 ))
              ) : (
@@ -610,5 +609,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

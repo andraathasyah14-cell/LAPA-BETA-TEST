@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -32,6 +33,9 @@ import { Switch } from '@/components/ui/switch';
 import type { Country, News } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, getDocs, doc, setDoc, Timestamp, query, where } from 'firebase/firestore';
+import { Badge } from '@/components/ui/badge';
 
 
 const RegisterCountryForm = ({
@@ -44,16 +48,36 @@ const RegisterCountryForm = ({
   const [countryName, setCountryName] = React.useState('');
   const [ownerName, setOwnerName] = React.useState('');
   const [open, setOpen] = React.useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newCountry: Country = {
-      id: crypto.randomUUID(),
+
+    // Check if country already exists
+    const countriesRef = collection(db, 'countries');
+    const q = query(countriesRef, where("countryName", "==", countryName));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+       toast({
+        variant: "destructive",
+        title: "Pendaftaran Gagal",
+        description: `Negara dengan nama "${countryName}" sudah terdaftar.`,
+      });
+      return;
+    }
+
+    const newCountry: Omit<Country, 'id'> = {
       countryName,
       ownerName,
       registrationDate: new Date().toISOString(),
     };
-    onCountryRegistered(newCountry);
+    
+    const docRef = await addDoc(collection(db, "countries"), newCountry);
+    
+    const finalCountry = { ...newCountry, id: docRef.id };
+    onCountryRegistered(finalCountry);
+
     setCountryName('');
     setOwnerName('');
     setOpen(false);
@@ -115,25 +139,24 @@ export default function AddNewsPage() {
 
 
   React.useEffect(() => {
-    const storedCountries = localStorage.getItem('countries');
-    if (storedCountries) {
-      setCountries(JSON.parse(storedCountries));
-    }
+    const fetchCountries = async () => {
+      const countriesCollection = collection(db, 'countries');
+      const countrySnapshot = await getDocs(countriesCollection);
+      const countryList = countrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Country));
+      setCountries(countryList);
+    };
+
+    fetchCountries();
   }, []);
 
   const handleCountryRegistered = (country: Country) => {
-    if (countries.some(c => c.countryName.toLowerCase() === country.countryName.toLowerCase())) {
-      toast({
-        variant: "destructive",
-        title: "Pendaftaran Gagal",
-        description: `Negara dengan nama "${country.countryName}" sudah terdaftar.`,
-      })
-      return;
-    }
     const updatedCountries = [...countries, country];
     setCountries(updatedCountries);
-    localStorage.setItem('countries', JSON.stringify(updatedCountries));
     setCountryId(country.id);
+     toast({
+        title: "Pendaftaran Berhasil",
+        description: `Negara "${country.countryName}" telah terdaftar.`,
+      })
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,7 +170,7 @@ export default function AddNewsPage() {
     }
   };
 
-  const handlePublish = (e: React.FormEvent) => {
+  const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!countryId || !title || !description) {
         toast({
@@ -161,39 +184,48 @@ export default function AddNewsPage() {
     const country = countries.find(c => c.id === countryId);
     if (!country) return;
 
-    const newNews: News = {
-      id: crypto.randomUUID(),
-      title,
-      description,
-      imageUrl: image || undefined,
-      imageHint: "custom image",
-      authorCountry: country,
-      taggedCountry: countries.find(c => c.id === taggedCountryId),
-      isMapUpdate,
-      timestamp: new Date().toISOString(),
-      likes: 0,
-      comments: [],
-      newsType: newsType,
-    };
+    try {
+      const newNews: Omit<News, 'id'> = {
+        title,
+        description,
+        imageUrl: image || undefined,
+        imageHint: image ? "custom image" : undefined,
+        authorCountry: country,
+        taggedCountry: countries.find(c => c.id === taggedCountryId),
+        isMapUpdate,
+        timestamp: Timestamp.now(),
+        likes: 0,
+        comments: [],
+        newsType: newsType,
+      };
 
-    const storedNews = JSON.parse(localStorage.getItem('news') || '[]');
-    const updatedNews = [newNews, ...storedNews];
-    localStorage.setItem('news', JSON.stringify(updatedNews));
-    
-    toast({
-      title: "Berhasil!",
-      description: "Berita Anda telah berhasil dipublikasikan.",
-    });
+      await addDoc(collection(db, "news"), newNews);
+      
+      toast({
+        title: "Berhasil!",
+        description: "Berita Anda telah berhasil dipublikasikan.",
+      });
 
-    router.push('/');
+      router.push('/');
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      toast({
+        variant: "destructive",
+        title: "Gagal Publikasi",
+        description: "Terjadi kesalahan saat menyimpan berita. Coba lagi nanti.",
+      });
+    }
   }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-header-background px-4 text-header-foreground md:px-6">
-        <div className="flex items-center gap-2">
-          <Landmark className="h-6 w-6" />
-          <h1 className="text-xl font-bold">United Lapa Nations</h1>
+        <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+                <Landmark className="h-6 w-6" />
+                <h1 className="text-xl font-bold">United Lapa Nations</h1>
+            </div>
+            <Badge variant="secondary">BETA</Badge>
         </div>
         <Link href="/" passHref>
           <Button variant="ghost">

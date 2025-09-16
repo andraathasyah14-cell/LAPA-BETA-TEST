@@ -23,27 +23,39 @@ import {
 import type { Country } from '@/lib/types';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { Badge } from '@/components/ui/badge';
 
 export default function ListNegaraPage() {
   const [countries, setCountries] = React.useState<Country[]>([]);
 
   React.useEffect(() => {
-    const storedCountries = localStorage.getItem('countries');
-    if (storedCountries) {
-      setCountries(JSON.parse(storedCountries));
-    }
+    const fetchCountries = async () => {
+      const countriesCollection = collection(db, 'countries');
+      const q = query(countriesCollection, orderBy('registrationDate', 'asc'));
+      const countrySnapshot = await getDocs(q);
+      const countryList = countrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Country));
+      setCountries(countryList);
+    };
+
+    fetchCountries();
   }, []);
   
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Tanggal tidak diketahui';
     return format(new Date(dateString), "d MMMM yyyy", { locale: id });
   }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-header-background px-4 text-header-foreground md:px-6">
-        <div className="flex items-center gap-2">
-          <Landmark className="h-6 w-6" />
-          <h1 className="text-xl font-bold">United Lapa Nations</h1>
+        <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+                <Landmark className="h-6 w-6" />
+                <h1 className="text-xl font-bold">United Lapa Nations</h1>
+            </div>
+            <Badge variant="secondary">BETA</Badge>
         </div>
         <Link href="/" passHref>
           <Button variant="ghost">
