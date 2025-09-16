@@ -122,46 +122,55 @@ const RegisterCountryForm = ({
     e.preventDefault();
 
     const formattedCountryName = formatCountryName(countryName);
-    if (!formattedCountryName) return;
-
-    // Check if country already exists (case-insensitive)
-    const countriesRef = collection(db, 'countries');
-    const q = query(countriesRef, where("countryName", ">=", formattedCountryName.toLowerCase()), where("countryName", "<=", formattedCountryName.toLowerCase() + '\uf8ff'));
-    const querySnapshot = await getDocs(q);
-
-    let exists = false;
-    querySnapshot.forEach((doc) => {
-        if (doc.data().countryName.toLowerCase() === formattedCountryName.toLowerCase()) {
-            exists = true;
-        }
-    });
-
-    if (exists) {
-      toast({
-        variant: "destructive",
-        title: "Pendaftaran Gagal",
-        description: `Negara dengan nama "${formattedCountryName}" sudah terdaftar.`,
-      });
-      return;
+    if (!formattedCountryName || !ownerName) {
+        toast({
+            variant: "destructive",
+            title: "Pendaftaran Gagal",
+            description: "Nama negara dan nama pemilik tidak boleh kosong.",
+        });
+        return;
     }
 
-    const newCountryData: Omit<Country, 'id'> = {
-      countryName: formattedCountryName,
-      ownerName,
-      registrationDate: new Date().toISOString(),
-    };
+    const countriesRef = collection(db, 'countries');
+    const q = query(countriesRef, where("countryName", ">=", formattedCountryName.toLowerCase()), where("countryName", "<=", formattedCountryName.toLowerCase() + '\uf8ff'));
 
     try {
-      const docRef = await addDoc(countriesRef, newCountryData);
-      const newCountry = { id: docRef.id, ...newCountryData };
-      onCountryRegistered(newCountry);
-      setCountryName('');
-      setOwnerName('');
-      setOpen(false);
-       toast({
-        title: "Pendaftaran Berhasil",
-        description: `Negara "${formattedCountryName}" berhasil didaftarkan.`,
-      });
+        const querySnapshot = await getDocs(q);
+        let exists = false;
+        querySnapshot.forEach((doc) => {
+            if (doc.data().countryName.toLowerCase() === formattedCountryName.toLowerCase()) {
+                exists = true;
+            }
+        });
+
+        if (exists) {
+          toast({
+            variant: "destructive",
+            title: "Pendaftaran Gagal",
+            description: `Negara dengan nama "${formattedCountryName}" sudah terdaftar.`,
+          });
+          return;
+        }
+
+        const newCountryData: Omit<Country, 'id'> = {
+          countryName: formattedCountryName,
+          ownerName,
+          registrationDate: new Date().toISOString(),
+        };
+        
+        const docRef = await addDoc(countriesRef, newCountryData);
+        const newCountry = { id: docRef.id, ...newCountryData };
+        onCountryRegistered(newCountry);
+        
+        setCountryName('');
+        setOwnerName('');
+        setOpen(false);
+        
+        toast({
+            title: "Pendaftaran Berhasil",
+            description: `Negara "${formattedCountryName}" berhasil didaftarkan.`,
+        });
+
     } catch (error) {
       console.error("Error registering country: ", error);
       toast({
@@ -215,6 +224,7 @@ const NewsCard = ({ news, userCountry }: { news: News, userCountry: Country | nu
   const [showComments, setShowComments] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [newComment, setNewComment] = React.useState('');
+  const { toast } = useToast();
   
   const handleLike = async () => {
       if (!userCountry) {
@@ -628,5 +638,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

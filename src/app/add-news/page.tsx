@@ -70,43 +70,51 @@ const RegisterCountryForm = ({
     e.preventDefault();
 
     const formattedCountryName = formatCountryName(countryName);
-    if (!formattedCountryName) return;
+    if (!formattedCountryName || !ownerName) {
+        toast({
+            variant: "destructive",
+            title: "Pendaftaran Gagal",
+            description: "Nama negara dan nama pemilik tidak boleh kosong.",
+        });
+        return;
+    }
 
     // Check if country already exists (case-insensitive)
     const countriesRef = collection(db, 'countries');
     const q = query(countriesRef, where("countryName", ">=", formattedCountryName.toLowerCase()), where("countryName", "<=", formattedCountryName.toLowerCase() + '\uf8ff'));
-    const querySnapshot = await getDocs(q);
-    
-    let exists = false;
-    querySnapshot.forEach((doc) => {
-        if (doc.data().countryName.toLowerCase() === formattedCountryName.toLowerCase()) {
-            exists = true;
-        }
-    });
-
-    if (exists) {
-       toast({
-        variant: "destructive",
-        title: "Pendaftaran Gagal",
-        description: `Negara dengan nama "${formattedCountryName}" sudah terdaftar.`,
-      });
-      return;
-    }
-
-    const newCountry: Omit<Country, 'id'> = {
-      countryName: formattedCountryName,
-      ownerName: ownerName || 'Tidak Diketahui',
-      registrationDate: new Date().toISOString(),
-    };
     
     try {
-      const docRef = await addDoc(collection(db, "countries"), newCountry);
-      const finalCountry = { ...newCountry, id: docRef.id };
-      onCountryRegistered(finalCountry);
+        const querySnapshot = await getDocs(q);
+        let exists = false;
+        querySnapshot.forEach((doc) => {
+            if (doc.data().countryName.toLowerCase() === formattedCountryName.toLowerCase()) {
+                exists = true;
+            }
+        });
 
-      setCountryName('');
-      setOwnerName('');
-      setOpen(false);
+        if (exists) {
+           toast({
+            variant: "destructive",
+            title: "Pendaftaran Gagal",
+            description: `Negara dengan nama "${formattedCountryName}" sudah terdaftar.`,
+          });
+          return;
+        }
+
+        const newCountry: Omit<Country, 'id'> = {
+          countryName: formattedCountryName,
+          ownerName: ownerName,
+          registrationDate: new Date().toISOString(),
+        };
+      
+        const docRef = await addDoc(collection(db, "countries"), newCountry);
+        const finalCountry = { ...newCountry, id: docRef.id };
+        onCountryRegistered(finalCountry);
+
+        setCountryName('');
+        setOwnerName('');
+        setOpen(false);
+
     } catch(error) {
        console.error("Error registering country:", error);
         toast({
@@ -404,6 +412,3 @@ export default function AddNewsPage() {
     </div>
   );
 }
-
-    
-    
