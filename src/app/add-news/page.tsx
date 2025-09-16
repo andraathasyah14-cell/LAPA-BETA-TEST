@@ -289,12 +289,6 @@ export default function AddNewsPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <RegisterCountryForm 
-                    onCountryRegistered={handleCountryRegistered}
-                    initialOwnerName={ownerName}
-                  >
-                     <Button variant="outline" className="w-full justify-start"> <PlusCircle className="mr-2 h-4 w-4"/> Negara belum terdaftar? Klik untuk menambah.</Button>
-                  </RegisterCountryForm>
                 </div>
 
                 <div className="grid gap-3">
@@ -379,6 +373,12 @@ export default function AddNewsPage() {
                   Publikasikan Berita
                 </Button>
               </form>
+               <RegisterCountryForm 
+                onCountryRegistered={handleCountryRegistered}
+                initialOwnerName={ownerName}
+              >
+                  <Button variant="outline" type="button" className="w-full justify-start mt-4"> <PlusCircle className="mr-2 h-4 w-4"/> Negara belum terdaftar? Klik untuk menambah.</Button>
+              </RegisterCountryForm>
             </CardContent>
           </Card>
         </div>
@@ -386,3 +386,5 @@ export default function AddNewsPage() {
     </div>
   );
 }
+
+    
