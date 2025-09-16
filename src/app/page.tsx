@@ -192,19 +192,24 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl w-full p-0">
-            <Resizable 
-              defaultSize={{
-                width: '100%',
-                height: 'auto',
-              }}
+         <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] flex flex-col">
+            <Resizable
+              defaultSize={{ width: '100%', height: 'auto' }}
               minWidth={300}
               minHeight={400}
-              maxHeight={900}
-              maxWidth={1000}
               className="bg-card rounded-lg shadow-2xl flex flex-col"
+              handleClasses={{
+                bottom: 'hidden',
+                top: 'hidden',
+                left: 'hidden',
+                right: 'hidden',
+                bottomLeft: 'hidden',
+                bottomRight: 'hidden',
+                topLeft: 'hidden',
+                topRight: 'hidden',
+              }}
             >
-              <DialogHeader className="p-4 md:p-6 pb-0">
+              <DialogHeader className="p-4 md:p-6 pb-0 flex-shrink-0">
                   <DialogTitle className="text-xl md:text-2xl font-bold">
                       Negara X Resmi Mengubah Konstitusi 2025
                   </DialogTitle>
@@ -226,7 +231,7 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
                   {fullText}
                 </p>
               </div>
-              <CardFooter className="flex flex-col items-start gap-3 p-4 md:p-6 bg-muted/50 mt-4 rounded-b-lg">
+              <CardFooter className="flex flex-col items-start gap-3 p-4 md:p-6 bg-muted/50 mt-4 rounded-b-lg flex-shrink-0">
                 <div className="flex w-full justify-between items-center text-muted-foreground">
                     <div className="flex gap-1 md:gap-2">
                         <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50 text-xs md:text-sm">
@@ -407,5 +412,7 @@ export default function Home() {
     </div>
   );
 }
+
+    
 
     
