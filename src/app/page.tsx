@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -274,18 +275,18 @@ export default function Home() {
   const [userCountry, setUserCountry] = React.useState<Country | null>(null);
   const { toast } = useToast();
   const [isAlertDismissed, setIsAlertDismissed] = React.useState(false);
-  const [showDevInfo, setShowDevInfo] = React.useState(false);
+  const [showDevInfoModal, setShowDevInfoModal] = React.useState(false);
 
   React.useEffect(() => {
     const devInfoDismissed = sessionStorage.getItem('devInfoDismissed');
     if (!devInfoDismissed) {
-      setShowDevInfo(true);
+      setShowDevInfoModal(true);
     }
   }, []);
 
   const handleDismissDevInfo = () => {
     sessionStorage.setItem('devInfoDismissed', 'true');
-    setShowDevInfo(false);
+    setShowDevInfoModal(false);
   };
 
   const handleCountryRegistered = (country: Country) => {
@@ -398,20 +399,19 @@ export default function Home() {
         </aside>
       </div>
 
-       {showDevInfo && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
-            <Alert className="relative pr-12">
-                <AlertTitle>Informasi Developer</AlertTitle>
-                <AlertDescription>
+       <Dialog open={showDevInfoModal} onOpenChange={setShowDevInfoModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Informasi Developer</DialogTitle>
+              <DialogDescription>
                 Website ini dibuat oleh Andra.
-                </AlertDescription>
-                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={handleDismissDevInfo}>
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Tutup</span>
-                </Button>
-            </Alert>
-        </div>
-       )}
+              </DialogDescription>
+            </DialogHeader>
+            <Button onClick={handleDismissDevInfo} variant="outline">Tutup</Button>
+          </DialogContent>
+        </Dialog>
     </div>
   );
 }
+
+    
