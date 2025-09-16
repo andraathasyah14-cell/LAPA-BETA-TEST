@@ -57,26 +57,44 @@ const RegisterCountryForm = ({
       setOwnerName(initialOwnerName);
     }
   }, [open, initialOwnerName]);
+  
+  const formatCountryName = (name: string) => {
+    return name
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Check if country already exists
-    const countriesRef = collection(db, 'countries');
-    const q = query(countriesRef, where("countryName", "==", countryName));
-    const querySnapshot = await getDocs(q);
+    const formattedCountryName = formatCountryName(countryName);
+    if (!formattedCountryName) return;
 
-    if (!querySnapshot.empty) {
+    // Check if country already exists (case-insensitive)
+    const countriesRef = collection(db, 'countries');
+    const q = query(countriesRef, where("countryName", ">=", formattedCountryName.toLowerCase()), where("countryName", "<=", formattedCountryName.toLowerCase() + '\uf8ff'));
+    const querySnapshot = await getDocs(q);
+    
+    let exists = false;
+    querySnapshot.forEach((doc) => {
+        if (doc.data().countryName.toLowerCase() === formattedCountryName.toLowerCase()) {
+            exists = true;
+        }
+    });
+
+    if (exists) {
        toast({
         variant: "destructive",
         title: "Pendaftaran Gagal",
-        description: `Negara dengan nama "${countryName}" sudah terdaftar.`,
+        description: `Negara dengan nama "${formattedCountryName}" sudah terdaftar.`,
       });
       return;
     }
 
     const newCountry: Omit<Country, 'id'> = {
-      countryName,
+      countryName: formattedCountryName,
       ownerName: ownerName || 'Tidak Diketahui',
       registrationDate: new Date().toISOString(),
     };
@@ -159,7 +177,7 @@ export default function AddNewsPage() {
       const countriesCollection = collection(db, 'countries');
       const countrySnapshot = await getDocs(countriesCollection);
       const countryList = countrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Country));
-      setCountries(countryList);
+      setCountries(countryList.sort((a, b) => a.countryName.localeCompare(b.countryName)));
     };
 
     fetchCountries();
@@ -373,18 +391,19 @@ export default function AddNewsPage() {
                   Publikasikan Berita
                 </Button>
               </form>
-               <RegisterCountryForm 
-                onCountryRegistered={handleCountryRegistered}
-                initialOwnerName={ownerName}
-              >
-                  <Button variant="outline" type="button" className="w-full justify-start mt-4"> <PlusCircle className="mr-2 h-4 w-4"/> Negara belum terdaftar? Klik untuk menambah.</Button>
-              </RegisterCountryForm>
             </CardContent>
           </Card>
+           <RegisterCountryForm 
+            onCountryRegistered={handleCountryRegistered}
+            initialOwnerName={ownerName}
+          >
+              <Button variant="outline" type="button" className="w-full justify-start mt-4"> <PlusCircle className="mr-2 h-4 w-4"/> Negara belum terdaftar? Klik untuk menambah.</Button>
+          </RegisterCountryForm>
         </div>
       </main>
     </div>
   );
 }
 
+    
     

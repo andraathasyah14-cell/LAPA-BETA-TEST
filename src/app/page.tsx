@@ -110,24 +110,43 @@ const RegisterCountryForm = ({
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
 
+  const formatCountryName = (name: string) => {
+    return name
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    const formattedCountryName = formatCountryName(countryName);
+    if (!formattedCountryName) return;
+
+    // Check if country already exists (case-insensitive)
     const countriesRef = collection(db, 'countries');
-    const q = query(countriesRef, where("countryName", "==", countryName));
+    const q = query(countriesRef, where("countryName", ">=", formattedCountryName.toLowerCase()), where("countryName", "<=", formattedCountryName.toLowerCase() + '\uf8ff'));
     const querySnapshot = await getDocs(q);
 
-    if (!querySnapshot.empty) {
+    let exists = false;
+    querySnapshot.forEach((doc) => {
+        if (doc.data().countryName.toLowerCase() === formattedCountryName.toLowerCase()) {
+            exists = true;
+        }
+    });
+
+    if (exists) {
       toast({
         variant: "destructive",
         title: "Pendaftaran Gagal",
-        description: `Negara dengan nama "${countryName}" sudah terdaftar.`,
+        description: `Negara dengan nama "${formattedCountryName}" sudah terdaftar.`,
       });
       return;
     }
 
     const newCountryData: Omit<Country, 'id'> = {
-      countryName,
+      countryName: formattedCountryName,
       ownerName,
       registrationDate: new Date().toISOString(),
     };
@@ -141,7 +160,7 @@ const RegisterCountryForm = ({
       setOpen(false);
        toast({
         title: "Pendaftaran Berhasil",
-        description: `Negara "${countryName}" berhasil didaftarkan.`,
+        description: `Negara "${formattedCountryName}" berhasil didaftarkan.`,
       });
     } catch (error) {
       console.error("Error registering country: ", error);
@@ -198,6 +217,14 @@ const NewsCard = ({ news, userCountry }: { news: News, userCountry: Country | nu
   const [newComment, setNewComment] = React.useState('');
   
   const handleLike = async () => {
+      if (!userCountry) {
+        toast({
+          variant: 'destructive',
+          title: 'Gagal',
+          description: 'Anda harus terdaftar sebagai negara untuk menyukai berita.'
+        });
+        return;
+      }
       const newsRef = doc(db, 'news', news.id);
       await updateDoc(newsRef, {
         likes: news.likes + 1
@@ -206,7 +233,16 @@ const NewsCard = ({ news, userCountry }: { news: News, userCountry: Country | nu
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim() || !userCountry) return;
+    if (!newComment.trim() || !userCountry) {
+      if (!userCountry) {
+         toast({
+           variant: 'destructive',
+           title: 'Gagal Mengirim Komentar',
+           description: 'Anda harus terdaftar sebagai negara untuk berkomentar.'
+         })
+       }
+      return;
+    }
 
     const comment: Omit<Comment, 'id'> = {
       author: userCountry?.countryName || 'Pengguna Anonim',
@@ -335,7 +371,7 @@ const NewsCard = ({ news, userCountry }: { news: News, userCountry: Country | nu
                       </Button>
                   </form>
                 <div className="space-y-4">
-                  {news.comments.map((comment) => (
+                  {news.comments.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis()).map((comment) => (
                     <div key={comment.id} className="flex flex-col gap-1 border-b pb-3 last:border-none">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm md:text-base">{comment.author}</span>
@@ -506,14 +542,16 @@ export default function Home() {
       <div className="flex-1 grid grid-cols-12 gap-4 p-4 md:gap-8 md:p-10">
         <main className="col-span-12 lg:col-span-8 space-y-8">
          {!userCountry && !isAlertDismissed && (
-            <Alert variant="destructive" className="mb-6 relative pr-10">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Peringatan</AlertTitle>
-                <AlertDescription className="flex items-center justify-between">
-                    <span>Anda belum terdaftar. Silakan registrasi.</span>
-                     <RegisterCountryForm onCountryRegistered={handleCountryRegistered} />
+            <Alert variant="default" className="mb-6 relative pr-10 bg-primary/10 border-primary/30">
+                <AlertTriangle className="h-4 w-4 text-primary" />
+                <AlertTitle className="text-primary">Anda Belum Terdaftar</AlertTitle>
+                <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <span>Silakan registrasi negara Anda untuk berpartisipasi penuh.</span>
+                     <RegisterCountryForm onCountryRegistered={handleCountryRegistered}>
+                       <Button variant="link" className="p-0 h-auto text-primary font-bold mt-2 sm:mt-0">Registrasi sekarang</Button>
+                     </RegisterCountryForm>
                 </AlertDescription>
-                <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={handleDismissAlert}>
+                <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 text-primary/70 hover:text-primary" onClick={handleDismissAlert}>
                     <X className="h-4 w-4" />
                     <span className="sr-only">Tutup</span>
                 </Button>
