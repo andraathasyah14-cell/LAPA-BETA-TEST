@@ -2,6 +2,14 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: '/feedback/:path((?!general).*)',
+        destination: '/api/feedback/general',
+      },
+    ]
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
