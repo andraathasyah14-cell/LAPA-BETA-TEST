@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -302,7 +303,7 @@ export default function Home() {
          newsType: 'domestik',
        }
     ];
-    setNewsList(initialNews);
+    setNewsList(initialNews.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
      if (!storedNews) {
       localStorage.setItem('news', JSON.stringify(initialNews));
     }
@@ -316,7 +317,7 @@ export default function Home() {
   
   const handleNewsUpdate = (updatedNews: News) => {
     const updatedList = newsList.map(news => news.id === updatedNews.id ? updatedNews : news);
-    setNewsList(updatedList);
+    setNewsList(updatedList.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
     localStorage.setItem('news', JSON.stringify(updatedList));
   };
 
@@ -356,10 +357,12 @@ export default function Home() {
                 <span>Home</span>
                 </DropdownMenuItem>
             </Link>
-            <DropdownMenuItem>
-              <BookUser className="mr-2 h-4 w-4" />
-              <span>List Negara</span>
-            </DropdownMenuItem>
+            <Link href="/list-negara" passHref>
+              <DropdownMenuItem>
+                <BookUser className="mr-2 h-4 w-4" />
+                <span>List Negara</span>
+              </DropdownMenuItem>
+            </Link>
             <Link href="/add-news" passHref>
                <DropdownMenuItem>
                 <PlusCircle className="mr-2 h-4 w-4" />
