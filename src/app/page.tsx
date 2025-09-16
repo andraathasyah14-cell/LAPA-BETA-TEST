@@ -117,7 +117,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background">
+    <div className="flex min-h-screen w-full flex-col bg-background pb-20">
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-header-background px-4 text-header-foreground md:px-6">
         <div className="flex items-center gap-2">
           <Landmark className="h-6 w-6" />
@@ -152,15 +152,7 @@ export default function Home() {
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
-       <div className="p-4 md:px-10 md:pb-0">
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Perhatian!</AlertTitle>
-            <AlertDescription>
-              Website ini masih dalam tahap pengembangan. Jika ada bug, harap lapor di grup Lapa.
-            </AlertDescription>
-          </Alert>
-        </div>
+       
       <div className="flex flex-1 flex-col gap-4 p-4 md:grid md:grid-cols-12 md:gap-8 md:p-10">
         <main className="md:col-span-9">
           {!userCountry && (
@@ -246,6 +238,16 @@ export default function Home() {
           </Card>
         </aside>
       </div>
+
+       <div className="fixed bottom-0 left-0 right-0 z-50">
+          <Alert variant="destructive" className="rounded-none border-x-0 border-b-0">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Perhatian!</AlertTitle>
+            <AlertDescription>
+              Website ini masih dalam tahap pengembangan. Jika ada bug, harap lapor di grup Lapa.
+            </AlertDescription>
+          </Alert>
+        </div>
     </div>
   );
 }
