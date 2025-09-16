@@ -156,8 +156,8 @@ export default function Home() {
         </DropdownMenu>
       </header>
        
-      <div className="flex flex-1 flex-col gap-4 p-4 md:grid md:grid-cols-12 md:gap-8 md:p-10">
-        <main className="md:col-span-8 lg:col-span-9">
+      <div className="grid flex-1 grid-cols-12 gap-4 p-4 md:gap-8 md:p-10">
+        <main className="col-span-12 md:col-span-8 lg:col-span-9">
           {!userCountry && (
             <Alert variant="destructive" className="mb-6">
               <AlertTriangle className="h-4 w-4" />
@@ -211,7 +211,7 @@ export default function Home() {
           </div>
         </main>
 
-        <aside className="md:col-span-4 lg:col-span-3">
+        <aside className="col-span-12 md:col-span-4 lg:col-span-3">
           <Card className="bg-card/80">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
