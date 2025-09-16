@@ -165,7 +165,7 @@ export default function AddNewsPage() {
       id: crypto.randomUUID(),
       title,
       description,
-      imageUrl: image || `https://picsum.photos/seed/${crypto.randomUUID()}/1200/400`,
+      imageUrl: image || undefined,
       imageHint: "custom image",
       authorCountry: country,
       taggedCountry: countries.find(c => c.id === taggedCountryId),

@@ -196,20 +196,22 @@ const NewsCard = ({ news, userCountry, onNewsUpdate }: { news: News, userCountry
         onClick={() => setIsDialogOpen(true)}
         className="w-full bg-card p-4 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col md:flex-row gap-4"
       >
-        <div className="relative h-48 md:h-auto md:w-1/3 rounded-lg overflow-hidden">
-            <Image 
-              src={news.imageUrl} 
-              alt="News image" 
-              fill 
-              className="object-cover" 
-              data-ai-hint={news.imageHint} 
-            />
-             {news.isMapUpdate && (
-                <Badge variant="destructive" className="absolute top-2 right-2 z-10 text-xs px-2 py-1 shadow-md">
-                PETA BARU
-                </Badge>
-            )}
-          </div>
+        {news.imageUrl && (
+          <div className="relative h-48 md:h-auto md:w-1/3 rounded-lg overflow-hidden">
+              <Image 
+                src={news.imageUrl} 
+                alt="News image" 
+                fill 
+                className="object-cover" 
+                data-ai-hint={news.imageHint} 
+              />
+              {news.isMapUpdate && (
+                  <Badge variant="destructive" className="absolute top-2 right-2 z-10 text-xs px-2 py-1 shadow-md">
+                  PETA BARU
+                  </Badge>
+              )}
+            </div>
+        )}
 
         <div className="flex-1 flex flex-col justify-between">
             <div>
@@ -252,15 +254,17 @@ const NewsCard = ({ news, userCountry, onNewsUpdate }: { news: News, userCountry
               </div>
           </DialogHeader>
           <div className="overflow-y-auto px-4 md:px-6">
-            <div className="relative h-48 md:h-60 w-full my-4 rounded-lg overflow-hidden">
-                <Image 
-                    src={news.imageUrl} 
-                    alt="News image" 
-                    fill 
-                    className="object-cover" 
-                    data-ai-hint={news.imageHint} 
-                />
-            </div>
+            {news.imageUrl && (
+              <div className="relative h-48 md:h-60 w-full my-4 rounded-lg overflow-hidden">
+                  <Image 
+                      src={news.imageUrl} 
+                      alt="News image" 
+                      fill 
+                      className="object-cover" 
+                      data-ai-hint={news.imageHint} 
+                  />
+              </div>
+            )}
             <p className="whitespace-pre-wrap text-sm md:text-base text-foreground/90">
               {news.description}
             </p>

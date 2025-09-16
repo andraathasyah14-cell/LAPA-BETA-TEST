@@ -9,8 +9,8 @@ export interface News {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
-  imageHint: string;
+  imageUrl?: string;
+  imageHint?: string;
   authorCountry: Country;
   taggedCountry?: Country;
   isMapUpdate: boolean;
