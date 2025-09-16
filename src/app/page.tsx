@@ -269,7 +269,7 @@ export default function Home() {
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-header-background px-4 text-header-foreground md:px-6">
         <div className="flex items-center gap-2">
           <Landmark className="h-6 w-6" />
-          <h1 className="text-xl font-bold">united lapa nations</h1>
+          <h1 className="text-xl font-bold">United Lapa Nations</h1>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
