@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -18,11 +17,11 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Globe,
   Landmark,
   BookUser,
   Newspaper,
@@ -33,7 +32,8 @@ import {
   Share2,
   X,
   Menu,
-  AlertTriangle
+  AlertTriangle,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -49,6 +49,49 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import type { Country, News, Comment } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
+
+const TermsOfServiceModal = ({ isOpen, onAccept }: { isOpen: boolean; onAccept: () => void }) => {
+  if (!isOpen) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onAccept()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ShieldCheck className="h-6 w-6 text-primary" />
+            Terms and Services
+          </DialogTitle>
+        </DialogHeader>
+        <div className="max-h-[60vh] overflow-y-auto pr-4 text-sm space-y-4">
+            <p className="font-bold">SINCE 2017 IRL!🏅</p>
+            <p>Selamat datang di ULN, organisasi mapgame yang menggunakan latar planet Lapa. Mapgame kami memadukan permainan simulasi interaktif dengan worldbuilding yang dalam.</p>
+            <div>
+                <h3 className="font-bold mb-2">Rules:</h3>
+                <ul className="list-disc list-inside space-y-1">
+                    <li>No 18+, spam, etc.</li>
+                    <li>Refrensi negara asli disarankan, tapi jangan sepenuhnya jiplak</li>
+                    <li>Alutsista boleh ambil Google tapi harus realistis.</li>
+                    <li>Agama asli diganti sebutannya, misalnya Islam= "Dinhaq" Katolik= "Romansky"</li>
+                    <li>No bid'ah² club (terlalu futuristik, ga masuk akal, dsb)</li>
+                </ul>
+            </div>
+             <div>
+                <h3 className="font-bold mb-2">Info Penting:</h3>
+                <ul className="list-disc list-inside space-y-1">
+                    <li>1 tahun Lapa= 1 Bulan Bumi (September 2025 = 2080)</li>
+                    <li>$ = 1 ULD = 1 USD</li>
+                    <li>IG: @unitedlapanations (hangus rek)</li>
+                </ul>
+            </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={onAccept} className="w-full">Accept</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 
 const RegisterCountryForm = ({
   onCountryRegistered,
@@ -264,9 +307,16 @@ export default function Home() {
   const [showDevInfoModal, setShowDevInfoModal] = React.useState(false);
   const [globalComments, setGlobalComments] = React.useState<Comment[]>([]);
   const [newGlobalComment, setNewGlobalComment] = React.useState('');
+  const [showTermsModal, setShowTermsModal] = React.useState(false);
 
 
   React.useEffect(() => {
+    // Terms of Service Modal
+    const termsAccepted = localStorage.getItem('termsAccepted');
+    if (!termsAccepted) {
+      setShowTermsModal(true);
+    }
+    
     // Dev info modal
     const devInfoDismissed = sessionStorage.getItem('devInfoDismissed');
     if (!devInfoDismissed) {
@@ -323,6 +373,11 @@ export default function Home() {
     setShowDevInfoModal(false);
   };
   
+  const handleAcceptTerms = () => {
+    localStorage.setItem('termsAccepted', 'true');
+    setShowTermsModal(false);
+  };
+  
   const handleNewsUpdate = (updatedNews: News) => {
     const updatedList = newsList.map(news => news.id === updatedNews.id ? updatedNews : news);
     setNewsList(updatedList.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
@@ -368,6 +423,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
+       <TermsOfServiceModal isOpen={showTermsModal} onAccept={handleAcceptTerms} />
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-header-background px-4 text-header-foreground md:px-6">
         <div className="flex items-center gap-2">
           <Landmark className="h-6 w-6" />
