@@ -47,7 +47,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/theme-toggle';
-
+import { Resizable } from 're-resizable';
 
 interface Country {
   id: string;
@@ -136,12 +136,10 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
   ]);
   const [newComment, setNewComment] = React.useState('');
   const [showComments, setShowComments] = React.useState(false);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   const fullText = `Dalam sebuah pengumuman bersejarah, pemerintah Negara X mengumumkan adopsi Konstitusi 2025 yang baru, menggantikan undang-undang dasar sebelumnya. Langkah ini dipandang sebagai momen transformatif dalam sejarah bangsa, yang bertujuan untuk memperkuat demokrasi, hak asasi manusia, dan pembangunan berkelanjutan. Konstitusi baru ini mencakup beberapa perubahan fundamental, termasuk pengakuan hak-hak minoritas yang lebih luas, pembentukan lembaga anti-korupsi independen, dan komitmen yang lebih kuat terhadap perlindungan lingkungan. Presiden Negara X menyatakan bahwa konstitusi ini adalah 'fajar baru bagi bangsa kita', sementara kelompok oposisi menyuarakan keprihatinan tentang potensi pemusatan kekuasaan. Debat publik diperkirakan akan terus berlanjut seiring negara ini memasuki babak baru dalam pemerintahannya.`;
   
-  const truncatedText = fullText.substring(0, 150) + '...';
-
-  const toggleReadMore = () => setIsExpanded(!isExpanded);
   const handleLike = () => setLikes(prev => prev + 1);
 
   const handleCommentSubmit = (e: React.FormEvent) => {
@@ -162,85 +160,118 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
   const isMapUpdate = true; // Mock data for map update status
 
   return (
-    <Card className="bg-card/90 border-un-blue-dark relative overflow-hidden shadow-lg">
-      <CardHeader className="p-0 relative">
-        {isMapUpdate && (
-          <Badge variant="destructive" className="absolute top-2 right-2 md:top-4 md:right-4 z-10 flex items-center gap-1 text-xs px-2 py-1">
-            <Map className="h-3 w-3" />
-            Update Peta
-          </Badge>
-        )}
-        <div className="relative h-40 md:h-60 w-full">
-          <Image 
-            src="https://picsum.photos/seed/politics/1200/400" 
-            alt="News image" 
-            fill 
-            className="object-cover" 
-            data-ai-hint="political assembly" 
-          />
-        </div>
-      </CardHeader>
-      <CardContent className="p-3 md:p-6">
-        <CardTitle className="text-lg md:text-3xl font-bold mb-2">
-          Negara X Resmi Mengubah Konstitusi 2025
-        </CardTitle>
-        <div className="text-xs md:text-sm text-muted-foreground mb-3">
-          <span>Diposting oleh: <strong>Negara X</strong> | 1 jam yang lalu</span>
-        </div>
-        <p className="whitespace-pre-wrap text-xs md:text-base text-foreground/90">
-          {isExpanded ? fullText : truncatedText}
-        </p>
-        {!isExpanded && (
-           <Button variant="link" onClick={toggleReadMore} className="p-0 h-auto text-blue-500 hover:text-blue-400 text-xs md:text-base">
-             Selanjutnya...
-          </Button>
-        )}
-      </CardContent>
-      <CardFooter className="flex flex-col items-start gap-3 p-3 md:p-6 bg-muted/50">
-         <div className="flex w-full justify-between items-center text-muted-foreground">
-            <div className="flex gap-1 md:gap-2">
-                <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50 text-xs md:text-sm">
-                    <ThumbsUp className="mr-1 md:mr-2 h-4 w-4" /> Suka ({likes})
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => setShowComments(!showComments)} className="hover:bg-accent/50 text-xs md:text-sm">
-                    <MessageSquare className="mr-1 md:mr-2 h-4 w-4" /> Komentar ({comments.length})
-                </Button>
-                 <Button variant="ghost" size="sm" className="hover:bg-accent/50 text-xs md:text-sm">
-                    <Share2 className="mr-1 md:mr-2 h-4 w-4" /> Bagikan
-                </Button>
-            </div>
-         </div>
-         {showComments && (
-          <div className="w-full space-y-4 pt-4 border-t">
-            <h4 className="font-semibold text-sm md:text-lg">Komentar</h4>
-              <form onSubmit={handleCommentSubmit} className="space-y-3">
-                  <Label htmlFor="comment-input" className="font-normal text-xs">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || 'Pengguna Anonim'}</span></Label>
-                  <Textarea 
-                      id="comment-input"
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Tulis komentarmu..."
-                      className="text-xs"
-                  />
-                  <Button type="submit" size="sm" disabled={!newComment.trim()}>
-                      Kirim Komentar
-                  </Button>
-              </form>
-            <div className="space-y-4">
-              {comments.map((comment) => (
-                <div key={comment.id} className="flex flex-col gap-1 border-b pb-3 last:border-none">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-xs">{comment.author}</span>
-                    <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
-                  </div>
-                  <p className="text-xs">{comment.text}</p>
-                </div>
-              ))}
-            </div>
+    <>
+      <Card 
+        onClick={() => setIsDialogOpen(true)}
+        className="w-[190px] bg-card p-1.5 rounded-lg overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-shadow duration-300"
+      >
+        <CardHeader className="p-0 relative">
+          {isMapUpdate && (
+            <Badge variant="destructive" className="absolute top-2 right-2 z-10 text-xs px-2 py-1">
+              Update Peta
+            </Badge>
+          )}
+          <div className="relative h-[100px] w-full">
+            <Image 
+              src="https://picsum.photos/seed/politics/1200/400" 
+              alt="News image" 
+              fill 
+              className="object-cover rounded-t-md" 
+              data-ai-hint="political assembly" 
+            />
           </div>
-        )}
-      </CardFooter>
-    </Card>
+        </CardHeader>
+        <CardContent className="p-2">
+          <p className="text-xs font-semibold text-blue-500 uppercase">Perubahan Konstitusi</p>
+          <h3 className="font-bold text-sm leading-tight mt-1 text-card-foreground">
+            Negara X Resmi Mengubah Konstitusi 2025
+          </h3>
+          <p className="text-xs text-muted-foreground mt-3">
+            Oleh <span className="font-semibold text-foreground/80">Negara X</span>
+          </p>
+        </CardContent>
+      </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl p-0">
+            <Resizable 
+              defaultSize={{
+                width: 672,
+                height: 700,
+              }}
+              minConstraints={[300, 300]}
+              maxConstraints={[1000, 900]}
+              className="bg-card rounded-lg shadow-2xl flex flex-col"
+            >
+              <DialogHeader className="p-6 pb-0">
+                  <DialogTitle className="text-2xl font-bold">
+                      Negara X Resmi Mengubah Konstitusi 2025
+                  </DialogTitle>
+                  <div className="text-sm text-muted-foreground pt-1">
+                      <span>Diposting oleh: <strong>Negara X</strong> | 1 jam yang lalu</span>
+                  </div>
+              </DialogHeader>
+              <div className="flex-1 overflow-y-auto px-6">
+                <div className="relative h-60 w-full my-4 rounded-lg overflow-hidden">
+                    <Image 
+                        src="https://picsum.photos/seed/politics/1200/400" 
+                        alt="News image" 
+                        fill 
+                        className="object-cover" 
+                        data-ai-hint="political assembly" 
+                    />
+                </div>
+                <p className="whitespace-pre-wrap text-base text-foreground/90">
+                  {fullText}
+                </p>
+              </div>
+              <CardFooter className="flex flex-col items-start gap-3 p-6 bg-muted/50 mt-4 rounded-b-lg">
+                <div className="flex w-full justify-between items-center text-muted-foreground">
+                    <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50 text-sm">
+                            <ThumbsUp className="mr-2 h-4 w-4" /> Suka ({likes})
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setShowComments(!showComments)} className="hover:bg-accent/50 text-sm">
+                            <MessageSquare className="mr-2 h-4 w-4" /> Komentar ({comments.length})
+                        </Button>
+                        <Button variant="ghost" size="sm" className="hover:bg-accent/50 text-sm">
+                            <Share2 className="mr-2 h-4 w-4" /> Bagikan
+                        </Button>
+                    </div>
+                </div>
+                {showComments && (
+                  <div className="w-full space-y-4 pt-4 border-t">
+                    <h4 className="font-semibold text-lg">Komentar</h4>
+                      <form onSubmit={handleCommentSubmit} className="space-y-3">
+                          <Label htmlFor="comment-input-dialog" className="font-normal text-sm">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || 'Pengguna Anonim'}</span></Label>
+                          <Textarea 
+                              id="comment-input-dialog"
+                              value={newComment}
+                              onChange={(e) => setNewComment(e.target.value)}
+                              placeholder="Tulis komentarmu..."
+                          />
+                          <Button type="submit" size="sm" disabled={!newComment.trim()}>
+                              Kirim Komentar
+                          </Button>
+                      </form>
+                    <div className="space-y-4">
+                      {comments.map((comment) => (
+                        <div key={comment.id} className="flex flex-col gap-1 border-b pb-3 last:border-none">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{comment.author}</span>
+                            <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
+                          </div>
+                          <p>{comment.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardFooter>
+            </Resizable>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
@@ -328,7 +359,10 @@ export default function Home() {
             </Alert>
           )}
 
-          <NewsCard countries={countries} userCountry={userCountry} />
+          <div className="flex flex-wrap gap-4">
+             <NewsCard countries={countries} userCountry={userCountry} />
+             {/* Add more NewsCard components here if needed */}
+          </div>
 
         </main>
 
