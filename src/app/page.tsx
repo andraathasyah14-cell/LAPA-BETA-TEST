@@ -152,6 +152,15 @@ export default function Home() {
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
+       <div className="p-4 md:px-10 md:pb-0">
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Perhatian!</AlertTitle>
+            <AlertDescription>
+              Website ini masih dalam tahap pengembangan. Jika ada bug, harap lapor di grup Lapa.
+            </AlertDescription>
+          </Alert>
+        </div>
       <div className="flex flex-1 flex-col gap-4 p-4 md:grid md:grid-cols-12 md:gap-8 md:p-10">
         <main className="md:col-span-9">
           {!userCountry && (
