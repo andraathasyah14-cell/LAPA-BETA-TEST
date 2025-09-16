@@ -40,15 +40,23 @@ import { Badge } from '@/components/ui/badge';
 
 const RegisterCountryForm = ({
   onCountryRegistered,
+  initialOwnerName,
   children,
 }: {
   onCountryRegistered: (country: Country) => void;
+  initialOwnerName: string;
   children?: React.ReactNode;
 }) => {
   const [countryName, setCountryName] = React.useState('');
-  const [ownerName, setOwnerName] = React.useState('');
+  const [ownerName, setOwnerName] = React.useState(initialOwnerName);
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    if (open) {
+      setOwnerName(initialOwnerName);
+    }
+  }, [open, initialOwnerName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,18 +77,26 @@ const RegisterCountryForm = ({
 
     const newCountry: Omit<Country, 'id'> = {
       countryName,
-      ownerName,
+      ownerName: ownerName || 'Tidak Diketahui',
       registrationDate: new Date().toISOString(),
     };
     
-    const docRef = await addDoc(collection(db, "countries"), newCountry);
-    
-    const finalCountry = { ...newCountry, id: docRef.id };
-    onCountryRegistered(finalCountry);
+    try {
+      const docRef = await addDoc(collection(db, "countries"), newCountry);
+      const finalCountry = { ...newCountry, id: docRef.id };
+      onCountryRegistered(finalCountry);
 
-    setCountryName('');
-    setOwnerName('');
-    setOpen(false);
+      setCountryName('');
+      setOwnerName('');
+      setOpen(false);
+    } catch(error) {
+       console.error("Error registering country:", error);
+        toast({
+        variant: "destructive",
+        title: "Pendaftaran Gagal",
+        description: "Terjadi kesalahan saat mendaftarkan negara.",
+      });
+    }
   };
 
   return (
@@ -150,12 +166,12 @@ export default function AddNewsPage() {
   }, []);
 
   const handleCountryRegistered = (country: Country) => {
-    const updatedCountries = [...countries, country];
+    const updatedCountries = [...countries, country].sort((a, b) => a.countryName.localeCompare(b.countryName));
     setCountries(updatedCountries);
     setCountryId(country.id);
      toast({
         title: "Pendaftaran Berhasil",
-        description: `Negara "${country.countryName}" telah terdaftar.`,
+        description: `Negara "${country.countryName}" telah terdaftar dan dipilih.`,
       })
   }
 
@@ -183,6 +199,11 @@ export default function AddNewsPage() {
 
     const country = countries.find(c => c.id === countryId);
     if (!country) return;
+    
+    // Sync owner name if it has changed
+    if (country.ownerName !== ownerName && ownerName) {
+        country.ownerName = ownerName;
+    }
 
     try {
       const newNews: Omit<News, 'id'> = {
@@ -216,6 +237,15 @@ export default function AddNewsPage() {
       });
     }
   }
+  
+  React.useEffect(() => {
+    const selectedCountry = countries.find(c => c.id === countryId);
+    if (selectedCountry) {
+        setOwnerName(selectedCountry.ownerName);
+    } else {
+        setOwnerName('');
+    }
+  }, [countryId, countries]);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -246,11 +276,6 @@ export default function AddNewsPage() {
             <CardContent>
               <form className="space-y-6" onSubmit={handlePublish}>
                 <div className="grid gap-3">
-                  <Label htmlFor="owner-name">Nama Pemilik</Label>
-                  <Input id="owner-name" placeholder="John Doe" value={ownerName} onChange={e => setOwnerName(e.target.value)} />
-                </div>
-
-                <div className="grid gap-3">
                   <Label htmlFor="country">Nama Negara</Label>
                    <Select onValueChange={setCountryId} value={countryId}>
                     <SelectTrigger id="country">
@@ -264,9 +289,17 @@ export default function AddNewsPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <RegisterCountryForm onCountryRegistered={handleCountryRegistered}>
+                  <RegisterCountryForm 
+                    onCountryRegistered={handleCountryRegistered}
+                    initialOwnerName={ownerName}
+                  >
                      <Button variant="outline" className="w-full justify-start"> <PlusCircle className="mr-2 h-4 w-4"/> Negara belum terdaftar? Klik untuk menambah.</Button>
                   </RegisterCountryForm>
+                </div>
+
+                <div className="grid gap-3">
+                  <Label htmlFor="owner-name">Nama Pemilik</Label>
+                  <Input id="owner-name" placeholder="Akan terisi otomatis setelah memilih negara" value={ownerName} onChange={e => setOwnerName(e.target.value)} />
                 </div>
                 
                  <div className="grid gap-3">
