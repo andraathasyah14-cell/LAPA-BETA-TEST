@@ -159,6 +159,7 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
 
   return (
     <Card className="bg-card/90 border-un-blue-dark relative overflow-hidden shadow-lg">
+      <CardHeader className="p-0 relative">
         {isMapUpdate && (
           <Badge variant="destructive" className="absolute top-4 right-4 z-10 flex items-center gap-1">
             <Map className="h-3 w-3" />
@@ -166,79 +167,77 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
           </Badge>
         )}
         <div className="relative h-60 w-full">
-            <Image 
-                src="https://picsum.photos/seed/politics/1200/400" 
-                alt="News image" 
-                fill 
-                className="object-cover" 
-                data-ai-hint="political assembly" 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+          <Image 
+            src="https://picsum.photos/seed/politics/1200/400" 
+            alt="News image" 
+            fill 
+            className="object-cover" 
+            data-ai-hint="political assembly" 
+          />
         </div>
-        <CardHeader className="relative -mt-16 z-10 text-primary-foreground p-4 md:p-6">
-          <CardTitle className="text-2xl md:text-3xl font-bold">
-            Negara X Resmi Mengubah Konstitusi 2025
-          </CardTitle>
-          <div className="text-sm pt-2">
-            <span>Diposting oleh: <strong>Negara X</strong> | 1 jam yang lalu</span>
-          </div>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6">
-          <p className="whitespace-pre-wrap text-foreground/90">
-            {isExpanded ? fullText : truncatedText}
-          </p>
-          {!isExpanded && (
-             <Button variant="link" onClick={toggleReadMore} className="p-0 h-auto text-blue-500 hover:text-blue-400">
-               Selanjutnya...
-            </Button>
-          )}
-        </CardContent>
-        <CardFooter className="flex flex-col items-start gap-4 p-4 md:p-6 bg-muted/50">
-           <div className="flex w-full justify-between items-center text-muted-foreground">
-              <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50">
-                      <ThumbsUp className="mr-2 h-4 w-4" /> Suka ({likes})
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setShowComments(!showComments)} className="hover:bg-accent/50">
-                      <MessageSquare className="mr-2 h-4 w-4" /> Komentar ({comments.length})
-                  </Button>
-                   <Button variant="ghost" size="sm" className="hover:bg-accent/50">
-                      <Share2 className="mr-2 h-4 w-4" /> Bagikan
-                  </Button>
-              </div>
-           </div>
-           {showComments && (
-            <div className="w-full space-y-6 pt-4 border-t">
-              <h4 className="font-semibold text-lg">Komentar</h4>
-                <form onSubmit={handleCommentSubmit} className="space-y-4">
-                    <Label htmlFor="comment-input" className="font-normal">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || '...'}</span></Label>
-                    <Textarea 
-                        id="comment-input"
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Tulis komentarmu..."
-                        disabled={!userCountry}
-                    />
-                    <Button type="submit" disabled={!userCountry || !newComment.trim()}>
-                        Kirim Komentar
-                    </Button>
-                     {!userCountry && <p className="text-sm text-destructive">Anda harus mendaftarkan negara untuk berkomentar.</p>}
-                </form>
-              <div className="space-y-4">
-                {comments.map((comment) => (
-                  <div key={comment.id} className="flex flex-col gap-1 border-b pb-3 last:border-none">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm">{comment.author}</span>
-                      <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
-                    </div>
-                    <p className="text-sm">{comment.text}</p>
-                  </div>
-                ))}
-              </div>
+      </CardHeader>
+      <CardContent className="p-4 md:p-6">
+        <CardTitle className="text-2xl md:text-3xl font-bold mb-2">
+          Negara X Resmi Mengubah Konstitusi 2025
+        </CardTitle>
+        <div className="text-sm text-muted-foreground mb-4">
+          <span>Diposting oleh: <strong>Negara X</strong> | 1 jam yang lalu</span>
+        </div>
+        <p className="whitespace-pre-wrap text-foreground/90">
+          {isExpanded ? fullText : truncatedText}
+        </p>
+        {!isExpanded && (
+           <Button variant="link" onClick={toggleReadMore} className="p-0 h-auto text-blue-500 hover:text-blue-400">
+             Selanjutnya...
+          </Button>
+        )}
+      </CardContent>
+      <CardFooter className="flex flex-col items-start gap-4 p-4 md:p-6 bg-muted/50">
+         <div className="flex w-full justify-between items-center text-muted-foreground">
+            <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50">
+                    <ThumbsUp className="mr-2 h-4 w-4" /> Suka ({likes})
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowComments(!showComments)} className="hover:bg-accent/50">
+                    <MessageSquare className="mr-2 h-4 w-4" /> Komentar ({comments.length})
+                </Button>
+                 <Button variant="ghost" size="sm" className="hover:bg-accent/50">
+                    <Share2 className="mr-2 h-4 w-4" /> Bagikan
+                </Button>
             </div>
-          )}
-        </CardFooter>
-      </Card>
+         </div>
+         {showComments && (
+          <div className="w-full space-y-6 pt-4 border-t">
+            <h4 className="font-semibold text-lg">Komentar</h4>
+              <form onSubmit={handleCommentSubmit} className="space-y-4">
+                  <Label htmlFor="comment-input" className="font-normal">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || '...'}</span></Label>
+                  <Textarea 
+                      id="comment-input"
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Tulis komentarmu..."
+                      disabled={!userCountry}
+                  />
+                  <Button type="submit" disabled={!userCountry || !newComment.trim()}>
+                      Kirim Komentar
+                  </Button>
+                   {!userCountry && <p className="text-sm text-destructive">Anda harus mendaftarkan negara untuk berkomentar.</p>}
+              </form>
+            <div className="space-y-4">
+              {comments.map((comment) => (
+                <div key={comment.id} className="flex flex-col gap-1 border-b pb-3 last:border-none">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm">{comment.author}</span>
+                    <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
+                  </div>
+                  <p className="text-sm">{comment.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardFooter>
+    </Card>
   );
 };
 
