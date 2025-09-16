@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Alert,
   AlertDescription,
@@ -157,50 +158,60 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
   const isMapUpdate = true; // Mock data for map update status
 
   return (
-    <Card className="bg-un-blue-light/80 border-un-blue-dark relative">
+    <Card className="bg-card/90 border-un-blue-dark relative overflow-hidden shadow-lg">
         {isMapUpdate && (
-          <Badge variant="destructive" className="absolute top-4 right-4 flex items-center gap-1">
+          <Badge variant="destructive" className="absolute top-4 right-4 z-10 flex items-center gap-1">
             <Map className="h-3 w-3" />
             Update Peta
           </Badge>
         )}
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold pr-28">
+        <div className="relative h-60 w-full">
+            <Image 
+                src="https://picsum.photos/seed/politics/1200/400" 
+                alt="News image" 
+                fill 
+                className="object-cover" 
+                data-ai-hint="political assembly" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+        </div>
+        <CardHeader className="relative -mt-16 z-10 text-primary-foreground p-4 md:p-6">
+          <CardTitle className="text-2xl md:text-3xl font-bold">
             Negara X Resmi Mengubah Konstitusi 2025
           </CardTitle>
-          <div className="text-sm text-muted-foreground pt-2">
-            <span>Diposting oleh: Negara X | 1 jam yang lalu</span>
+          <div className="text-sm pt-2">
+            <span>Diposting oleh: <strong>Negara X</strong> | 1 jam yang lalu</span>
           </div>
         </CardHeader>
-        <CardContent>
-          <p className="whitespace-pre-wrap">
+        <CardContent className="p-4 md:p-6">
+          <p className="whitespace-pre-wrap text-foreground/90">
             {isExpanded ? fullText : truncatedText}
           </p>
           {!isExpanded && (
-             <Button variant="link" onClick={toggleReadMore} className="p-0 h-auto text-blue-600">
+             <Button variant="link" onClick={toggleReadMore} className="p-0 h-auto text-blue-500 hover:text-blue-400">
                Selanjutnya...
             </Button>
           )}
         </CardContent>
-        <CardFooter className="flex flex-col items-start gap-4">
-           <div className="flex w-full justify-between items-center text-muted-foreground border-t pt-4">
-              <div className="flex gap-4">
-                  <Button variant="ghost" size="sm" onClick={handleLike}>
+        <CardFooter className="flex flex-col items-start gap-4 p-4 md:p-6 bg-muted/50">
+           <div className="flex w-full justify-between items-center text-muted-foreground">
+              <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50">
                       <ThumbsUp className="mr-2 h-4 w-4" /> Suka ({likes})
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setShowComments(!showComments)}>
+                  <Button variant="ghost" size="sm" onClick={() => setShowComments(!showComments)} className="hover:bg-accent/50">
                       <MessageSquare className="mr-2 h-4 w-4" /> Komentar ({comments.length})
                   </Button>
-                   <Button variant="ghost" size="sm">
+                   <Button variant="ghost" size="sm" className="hover:bg-accent/50">
                       <Share2 className="mr-2 h-4 w-4" /> Bagikan
                   </Button>
               </div>
            </div>
            {showComments && (
-            <div className="w-full space-y-6 pt-4">
+            <div className="w-full space-y-6 pt-4 border-t">
               <h4 className="font-semibold text-lg">Komentar</h4>
                 <form onSubmit={handleCommentSubmit} className="space-y-4">
-                    <Label htmlFor="comment-input">Beri komentar sebagai {userCountry?.countryName || '...'}</Label>
+                    <Label htmlFor="comment-input" className="font-normal">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || '...'}</span></Label>
                     <Textarea 
                         id="comment-input"
                         value={newComment}
@@ -215,12 +226,12 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
                 </form>
               <div className="space-y-4">
                 {comments.map((comment) => (
-                  <div key={comment.id} className="flex flex-col gap-1 border-b pb-2">
+                  <div key={comment.id} className="flex flex-col gap-1 border-b pb-3 last:border-none">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold">{comment.author}</span>
+                      <span className="font-semibold text-sm">{comment.author}</span>
                       <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
                     </div>
-                    <p>{comment.text}</p>
+                    <p className="text-sm">{comment.text}</p>
                   </div>
                 ))}
               </div>
