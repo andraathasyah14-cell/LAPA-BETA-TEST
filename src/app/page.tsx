@@ -274,18 +274,19 @@ export default function Home() {
   const [userCountry, setUserCountry] = React.useState<Country | null>(null);
   const { toast } = useToast();
   const [isAlertDismissed, setIsAlertDismissed] = React.useState(false);
+  const [showDevInfo, setShowDevInfo] = React.useState(false);
 
   React.useEffect(() => {
-    const developerToastShown = sessionStorage.getItem('developerToastShown');
-    if (!developerToastShown) {
-      toast({
-        title: "Developer",
-        description: "Website ini dibuat oleh Andra.",
-      });
-      sessionStorage.setItem('developerToastShown', 'true');
+    const devInfoDismissed = sessionStorage.getItem('devInfoDismissed');
+    if (!devInfoDismissed) {
+      setShowDevInfo(true);
     }
-  }, [toast]);
+  }, []);
 
+  const handleDismissDevInfo = () => {
+    sessionStorage.setItem('devInfoDismissed', 'true');
+    setShowDevInfo(false);
+  };
 
   const handleCountryRegistered = (country: Country) => {
     if (countries.some(c => c.countryName.toLowerCase() === country.countryName.toLowerCase())) {
@@ -397,15 +398,20 @@ export default function Home() {
         </aside>
       </div>
 
-       <div className="fixed bottom-0 left-0 right-0 z-50">
-          <Alert variant="destructive" className="rounded-none border-x-0 border-b-0">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Perhatian!</AlertTitle>
-            <AlertDescription>
-              Website ini masih dalam tahap pengembangan. Jika ada bug, harap lapor di grup Lapa.
-            </AlertDescription>
-          </Alert>
+       {showDevInfo && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
+            <Alert className="relative pr-12">
+                <AlertTitle>Informasi Developer</AlertTitle>
+                <AlertDescription>
+                Website ini dibuat oleh Andra.
+                </AlertDescription>
+                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={handleDismissDevInfo}>
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Tutup</span>
+                </Button>
+            </Alert>
         </div>
+       )}
     </div>
   );
 }
