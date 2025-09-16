@@ -192,35 +192,51 @@ const NewsCard = ({ news, userCountry, onNewsUpdate }: { news: News, userCountry
     <>
       <Card 
         onClick={() => setIsDialogOpen(true)}
-        className="w-[190px] bg-card p-1.5 rounded-lg overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-shadow duration-300"
+        className="w-full bg-card p-4 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col md:flex-row gap-4"
       >
-        <CardHeader className="p-0 relative">
-          {news.isMapUpdate && (
-            <Badge variant="destructive" className="absolute top-2 right-2 z-10 text-xs px-2 py-1">
-              Update Peta
-            </Badge>
-          )}
-          <div className="relative h-[100px] w-full">
+        <div className="relative h-48 md:h-auto md:w-1/3 rounded-lg overflow-hidden">
             <Image 
               src={news.imageUrl} 
               alt="News image" 
               fill 
-              className="object-cover rounded-t-md" 
+              className="object-cover" 
               data-ai-hint={news.imageHint} 
             />
+             {news.isMapUpdate && (
+                <Badge variant="destructive" className="absolute top-2 right-2 z-10 text-xs px-2 py-1 shadow-md">
+                PETA BARU
+                </Badge>
+            )}
           </div>
-        </CardHeader>
-        <CardContent className="p-2">
-          <p className="text-xs font-semibold text-blue-500 uppercase">
-             {news.newsType === 'internasional' ? 'Berita Internasional' : 'Berita Domestik'}
-          </p>
-          <h3 className="font-bold text-sm leading-tight mt-1 text-card-foreground">
-            {news.title}
-          </h3>
-          <p className="text-xs text-muted-foreground mt-3">
-            Oleh <span className="font-semibold text-foreground/80">{news.authorCountry.countryName}</span>
-          </p>
-        </CardContent>
+
+        <div className="flex-1 flex flex-col justify-between">
+            <div>
+                <p className="text-sm font-semibold text-primary uppercase tracking-wider">
+                    {news.newsType === 'internasional' ? 'Berita Internasional' : 'Berita Domestik'}
+                </p>
+                <h3 className="font-bold text-xl lg:text-2xl leading-tight mt-2 text-card-foreground">
+                    {news.title}
+                </h3>
+                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                    {news.description}
+                </p>
+            </div>
+            <div className="flex items-center justify-between mt-4">
+                 <p className="text-xs text-muted-foreground">
+                    Oleh <span className="font-semibold text-foreground/80">{news.authorCountry.countryName}</span> &bull; {timeAgo(news.timestamp)}
+                </p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                        <ThumbsUp className="h-4 w-4"/>
+                        <span>{news.likes}</span>
+                    </div>
+                     <div className="flex items-center gap-1">
+                        <MessageSquare className="h-4 w-4"/>
+                        <span>{news.comments.length}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -333,6 +349,12 @@ export default function Home() {
     if (!storedCountries) {
       localStorage.setItem('countries', JSON.stringify(initialCountries));
     }
+    
+    const storedUserCountry = localStorage.getItem('userCountry');
+    if (storedUserCountry) {
+        setUserCountry(JSON.parse(storedUserCountry));
+    }
+
 
     // Load global comments from localStorage
     const storedGlobalComments = localStorage.getItem('globalComments');
@@ -398,6 +420,7 @@ export default function Home() {
     setCountries(updatedCountries);
     localStorage.setItem('countries', JSON.stringify(updatedCountries));
     setUserCountry(country);
+    localStorage.setItem('userCountry', JSON.stringify(country));
   };
 
   const handleGlobalCommentSubmit = (e: React.FormEvent) => {
@@ -470,7 +493,7 @@ export default function Home() {
       </header>
        
       <div className="flex-1 grid grid-cols-12 gap-4 p-4 md:gap-8 md:p-10">
-        <main className="col-span-12 md:col-span-8 space-y-8 pb-20">
+        <main className="col-span-12 lg:col-span-8 space-y-8">
          {!userCountry && !isAlertDismissed && (
             <Alert variant="destructive" className="mb-6 relative pr-10">
                 <AlertTriangle className="h-4 w-4" />
@@ -486,7 +509,7 @@ export default function Home() {
             </Alert>
           )}
 
-          <div className="flex flex-wrap gap-4">
+          <div className="space-y-6">
              {newsList.length > 0 ? (
                 newsList.map(news => (
                     <NewsCard 
@@ -497,18 +520,28 @@ export default function Home() {
                     />
                 ))
              ) : (
-                <p>Belum ada berita yang dipublikasikan.</p>
+                <div className="text-center py-16">
+                    <Newspaper className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-medium">Belum Ada Berita</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">Jadilah yang pertama mempublikasikan berita!</p>
+                    <Button asChild className="mt-6">
+                        <Link href="/add-news">
+                            <PlusCircle className="mr-2 h-4 w-4"/>
+                            Tambah Berita Baru
+                        </Link>
+                    </Button>
+                </div>
              )}
           </div>
 
         </main>
 
-        <aside className="col-span-12 md:col-span-4 space-y-6">
+        <aside className="col-span-12 lg:col-span-4 space-y-6 lg:sticky top-24 self-start">
            <Card className="bg-card/80">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageSquare />
-                <span>Komentar Global</span>
+                <span>Obrolan Global</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -525,7 +558,7 @@ export default function Home() {
                 />
                 <Button type="submit" size="sm" disabled={!newGlobalComment.trim()}>Kirim</Button>
               </form>
-              <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
+              <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
                 {globalComments.length > 0 ? (
                   globalComments.map((comment) => (
                     <div key={comment.id} className="flex flex-col gap-1 border-b pb-3 last:border-none">
@@ -542,7 +575,6 @@ export default function Home() {
               </div>
             </CardContent>
           </Card>
-
         </aside>
       </div>
       
