@@ -117,7 +117,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background pb-20">
+    <div className="flex min-h-screen w-full flex-col bg-background/80 backdrop-blur-sm pb-20">
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-header-background px-4 text-header-foreground md:px-6">
         <div className="flex items-center gap-2">
           <Landmark className="h-6 w-6" />
@@ -169,7 +169,7 @@ export default function Home() {
           )}
 
           <div className="space-y-8">
-            <Card className="bg-un-blue-light border-un-blue-dark">
+            <Card className="bg-un-blue-light/80 border-un-blue-dark">
               <CardHeader>
                 <CardTitle className="text-3xl font-bold">
                   Negara X Resmi Mengubah Konstitusi 2025
@@ -192,7 +192,7 @@ export default function Home() {
 
             <h2 className="text-2xl font-bold">Komentar Pembaca</h2>
             <div className="space-y-4">
-              <Card>
+              <Card className="bg-card/80">
                 <CardHeader className="flex flex-row items-center gap-4">
                   <User className="h-8 w-8" />
                   <div>
@@ -209,7 +209,7 @@ export default function Home() {
         </main>
 
         <aside className="md:col-span-3">
-          <Card>
+          <Card className="bg-card/80">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe />

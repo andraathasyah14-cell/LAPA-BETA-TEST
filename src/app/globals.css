@@ -27,7 +27,6 @@ body {
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 47.4% 11.2%;
-    --radius: 0.5rem;
 
     /* Custom Colors */
     --un-blue: 217 91% 60%;
@@ -75,5 +74,10 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    background-image: url('https://i.imgur.com/gGeCFvK.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
   }
 }
