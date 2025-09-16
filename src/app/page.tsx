@@ -139,7 +139,7 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
 
   const fullText = `Dalam sebuah pengumuman bersejarah, pemerintah Negara X mengumumkan adopsi Konstitusi 2025 yang baru, menggantikan undang-undang dasar sebelumnya. Langkah ini dipandang sebagai momen transformatif dalam sejarah bangsa, yang bertujuan untuk memperkuat demokrasi, hak asasi manusia, dan pembangunan berkelanjutan. Konstitusi baru ini mencakup beberapa perubahan fundamental, termasuk pengakuan hak-hak minoritas yang lebih luas, pembentukan lembaga anti-korupsi independen, dan komitmen yang lebih kuat terhadap perlindungan lingkungan. Presiden Negara X menyatakan bahwa konstitusi ini adalah 'fajar baru bagi bangsa kita', sementara kelompok oposisi menyuarakan keprihatinan tentang potensi pemusatan kekuasaan. Debat publik diperkirakan akan terus berlanjut seiring negara ini memasuki babak baru dalam pemerintahannya.`;
   
-  const truncatedText = fullText.substring(0, 200) + '...';
+  const truncatedText = fullText.substring(0, 150) + '...';
 
   const toggleReadMore = () => setIsExpanded(!isExpanded);
   const handleLike = () => setLikes(prev => prev + 1);
@@ -165,12 +165,12 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
     <Card className="bg-card/90 border-un-blue-dark relative overflow-hidden shadow-lg">
       <CardHeader className="p-0 relative">
         {isMapUpdate && (
-          <Badge variant="destructive" className="absolute top-4 right-4 z-10 flex items-center gap-1">
+          <Badge variant="destructive" className="absolute top-2 right-2 md:top-4 md:right-4 z-10 flex items-center gap-1 text-xs px-2 py-1">
             <Map className="h-3 w-3" />
             Update Peta
           </Badge>
         )}
-        <div className="relative h-60 w-full">
+        <div className="relative h-48 md:h-60 w-full">
           <Image 
             src="https://picsum.photos/seed/politics/1200/400" 
             alt="News image" 
@@ -181,47 +181,48 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
         </div>
       </CardHeader>
       <CardContent className="p-4 md:p-6">
-        <CardTitle className="text-2xl md:text-3xl font-bold mb-2">
+        <CardTitle className="text-xl md:text-3xl font-bold mb-2">
           Negara X Resmi Mengubah Konstitusi 2025
         </CardTitle>
-        <div className="text-sm text-muted-foreground mb-4">
+        <div className="text-xs md:text-sm text-muted-foreground mb-3">
           <span>Diposting oleh: <strong>Negara X</strong> | 1 jam yang lalu</span>
         </div>
-        <p className="whitespace-pre-wrap text-foreground/90">
+        <p className="whitespace-pre-wrap text-sm md:text-base text-foreground/90">
           {isExpanded ? fullText : truncatedText}
         </p>
         {!isExpanded && (
-           <Button variant="link" onClick={toggleReadMore} className="p-0 h-auto text-blue-500 hover:text-blue-400">
+           <Button variant="link" onClick={toggleReadMore} className="p-0 h-auto text-blue-500 hover:text-blue-400 text-sm md:text-base">
              Selanjutnya...
           </Button>
         )}
       </CardContent>
       <CardFooter className="flex flex-col items-start gap-4 p-4 md:p-6 bg-muted/50">
          <div className="flex w-full justify-between items-center text-muted-foreground">
-            <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50">
-                    <ThumbsUp className="mr-2 h-4 w-4" /> Suka ({likes})
+            <div className="flex gap-1 md:gap-2">
+                <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50 text-xs md:text-sm">
+                    <ThumbsUp className="mr-1 md:mr-2 h-4 w-4" /> Suka ({likes})
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setShowComments(!showComments)} className="hover:bg-accent/50">
-                    <MessageSquare className="mr-2 h-4 w-4" /> Komentar ({comments.length})
+                <Button variant="ghost" size="sm" onClick={() => setShowComments(!showComments)} className="hover:bg-accent/50 text-xs md:text-sm">
+                    <MessageSquare className="mr-1 md:mr-2 h-4 w-4" /> Komentar ({comments.length})
                 </Button>
-                 <Button variant="ghost" size="sm" className="hover:bg-accent/50">
-                    <Share2 className="mr-2 h-4 w-4" /> Bagikan
+                 <Button variant="ghost" size="sm" className="hover:bg-accent/50 text-xs md:text-sm">
+                    <Share2 className="mr-1 md:mr-2 h-4 w-4" /> Bagikan
                 </Button>
             </div>
          </div>
          {showComments && (
-          <div className="w-full space-y-6 pt-4 border-t">
-            <h4 className="font-semibold text-lg">Komentar</h4>
-              <form onSubmit={handleCommentSubmit} className="space-y-4">
-                  <Label htmlFor="comment-input" className="font-normal">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || 'Pengguna Anonim'}</span></Label>
+          <div className="w-full space-y-4 pt-4 border-t">
+            <h4 className="font-semibold text-base md:text-lg">Komentar</h4>
+              <form onSubmit={handleCommentSubmit} className="space-y-3">
+                  <Label htmlFor="comment-input" className="font-normal text-sm">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || 'Pengguna Anonim'}</span></Label>
                   <Textarea 
                       id="comment-input"
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Tulis komentarmu..."
+                      className="text-sm"
                   />
-                  <Button type="submit" disabled={!newComment.trim()}>
+                  <Button type="submit" size="sm" disabled={!newComment.trim()}>
                       Kirim Komentar
                   </Button>
               </form>
