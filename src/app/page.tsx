@@ -16,8 +16,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogDescription,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,7 +46,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Resizable } from 're-resizable';
 import type { Country, News, Comment } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -263,6 +262,9 @@ export default function Home() {
   const { toast } = useToast();
   const [isAlertDismissed, setIsAlertDismissed] = React.useState(false);
   const [showDevInfoModal, setShowDevInfoModal] = React.useState(false);
+  const [globalComments, setGlobalComments] = React.useState<Comment[]>([]);
+  const [newGlobalComment, setNewGlobalComment] = React.useState('');
+
 
   React.useEffect(() => {
     // Dev info modal
@@ -280,6 +282,12 @@ export default function Home() {
     setCountries(initialCountries);
     if (!storedCountries) {
       localStorage.setItem('countries', JSON.stringify(initialCountries));
+    }
+
+    // Load global comments from localStorage
+    const storedGlobalComments = localStorage.getItem('globalComments');
+    if (storedGlobalComments) {
+      setGlobalComments(JSON.parse(storedGlobalComments));
     }
 
 
@@ -336,6 +344,27 @@ export default function Home() {
     localStorage.setItem('countries', JSON.stringify(updatedCountries));
     setUserCountry(country);
   };
+
+  const handleGlobalCommentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGlobalComment.trim()) return;
+
+    const comment: Comment = {
+      id: crypto.randomUUID(),
+      author: userCountry?.countryName || 'Pengguna Anonim',
+      text: newGlobalComment,
+      timestamp: new Date().toISOString()
+    };
+
+    const updatedComments = [comment, ...globalComments];
+    setGlobalComments(updatedComments);
+    localStorage.setItem('globalComments', JSON.stringify(updatedComments));
+    setNewGlobalComment('');
+  }
+  
+  const timeAgo = (timestamp: string) => {
+    return formatDistanceToNow(new Date(timestamp), { addSuffix: true, locale: id });
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -418,7 +447,7 @@ export default function Home() {
 
         </main>
 
-        <aside className="col-span-12 md:col-span-4">
+        <aside className="col-span-12 md:col-span-4 space-y-6">
           <Card className="bg-card/80 sticky top-20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -443,6 +472,46 @@ export default function Home() {
               )}
             </CardContent>
           </Card>
+          
+           <Card className="bg-card/80">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare />
+                <span>Komentar Global</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleGlobalCommentSubmit} className="space-y-3 mb-4">
+                <Label htmlFor="global-comment-input" className="font-normal text-sm">
+                  Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || 'Pengguna Anonim'}</span>
+                </Label>
+                <Textarea
+                  id="global-comment-input"
+                  value={newGlobalComment}
+                  onChange={(e) => setNewGlobalComment(e.target.value)}
+                  placeholder="Tulis komentar global di sini..."
+                  className="min-h-[60px]"
+                />
+                <Button type="submit" size="sm" disabled={!newGlobalComment.trim()}>Kirim</Button>
+              </form>
+              <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
+                {globalComments.length > 0 ? (
+                  globalComments.map((comment) => (
+                    <div key={comment.id} className="flex flex-col gap-1 border-b pb-3 last:border-none">
+                       <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm">{comment.author}</span>
+                          <span className="text-xs text-muted-foreground">{timeAgo(comment.timestamp)}</span>
+                        </div>
+                        <p className="text-sm">{comment.text}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">Belum ada komentar global.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
         </aside>
       </div>
       
