@@ -170,7 +170,7 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
             Update Peta
           </Badge>
         )}
-        <div className="relative h-48 md:h-60 w-full">
+        <div className="relative h-40 md:h-60 w-full">
           <Image 
             src="https://picsum.photos/seed/politics/1200/400" 
             alt="News image" 
@@ -180,23 +180,23 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
           />
         </div>
       </CardHeader>
-      <CardContent className="p-4 md:p-6">
-        <CardTitle className="text-xl md:text-3xl font-bold mb-2">
+      <CardContent className="p-3 md:p-6">
+        <CardTitle className="text-lg md:text-3xl font-bold mb-2">
           Negara X Resmi Mengubah Konstitusi 2025
         </CardTitle>
         <div className="text-xs md:text-sm text-muted-foreground mb-3">
           <span>Diposting oleh: <strong>Negara X</strong> | 1 jam yang lalu</span>
         </div>
-        <p className="whitespace-pre-wrap text-sm md:text-base text-foreground/90">
+        <p className="whitespace-pre-wrap text-xs md:text-base text-foreground/90">
           {isExpanded ? fullText : truncatedText}
         </p>
         {!isExpanded && (
-           <Button variant="link" onClick={toggleReadMore} className="p-0 h-auto text-blue-500 hover:text-blue-400 text-sm md:text-base">
+           <Button variant="link" onClick={toggleReadMore} className="p-0 h-auto text-blue-500 hover:text-blue-400 text-xs md:text-base">
              Selanjutnya...
           </Button>
         )}
       </CardContent>
-      <CardFooter className="flex flex-col items-start gap-4 p-4 md:p-6 bg-muted/50">
+      <CardFooter className="flex flex-col items-start gap-3 p-3 md:p-6 bg-muted/50">
          <div className="flex w-full justify-between items-center text-muted-foreground">
             <div className="flex gap-1 md:gap-2">
                 <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50 text-xs md:text-sm">
@@ -212,15 +212,15 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
          </div>
          {showComments && (
           <div className="w-full space-y-4 pt-4 border-t">
-            <h4 className="font-semibold text-base md:text-lg">Komentar</h4>
+            <h4 className="font-semibold text-sm md:text-lg">Komentar</h4>
               <form onSubmit={handleCommentSubmit} className="space-y-3">
-                  <Label htmlFor="comment-input" className="font-normal text-sm">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || 'Pengguna Anonim'}</span></Label>
+                  <Label htmlFor="comment-input" className="font-normal text-xs">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || 'Pengguna Anonim'}</span></Label>
                   <Textarea 
                       id="comment-input"
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Tulis komentarmu..."
-                      className="text-sm"
+                      className="text-xs"
                   />
                   <Button type="submit" size="sm" disabled={!newComment.trim()}>
                       Kirim Komentar
@@ -230,10 +230,10 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
               {comments.map((comment) => (
                 <div key={comment.id} className="flex flex-col gap-1 border-b pb-3 last:border-none">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">{comment.author}</span>
+                    <span className="font-semibold text-xs">{comment.author}</span>
                     <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
                   </div>
-                  <p className="text-sm">{comment.text}</p>
+                  <p className="text-xs">{comment.text}</p>
                 </div>
               ))}
             </div>
