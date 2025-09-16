@@ -17,6 +17,7 @@ export interface News {
   timestamp: string;
   likes: number;
   comments: Comment[];
+  newsType: 'domestik' | 'internasional';
 }
 
 export interface Comment {

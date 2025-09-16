@@ -169,7 +169,7 @@ const NewsCard = ({ news, userCountry, onNewsUpdate }: { news: News, userCountry
         </CardHeader>
         <CardContent className="p-2">
           <p className="text-xs font-semibold text-blue-500 uppercase">
-             {news.taggedCountry ? `Hubungan Diplomatik` : `Berita Domestik`}
+             {news.newsType === 'internasional' ? 'Berita Internasional' : 'Berita Domestik'}
           </p>
           <h3 className="font-bold text-sm leading-tight mt-1 text-card-foreground">
             {news.title}
@@ -284,7 +284,7 @@ export default function Home() {
 
     // Load news from localStorage
     const storedNews = localStorage.getItem('news');
-    const initialNews = storedNews ? JSON.parse(storedNews) : [
+    const initialNews: News[] = storedNews ? JSON.parse(storedNews) : [
        { 
          id: '1', 
          title: 'Negara X Resmi Mengubah Konstitusi 2025', 
@@ -298,7 +298,8 @@ export default function Home() {
          likes: 12,
          comments: [
             { id: '1', author: 'Pemimpin Negara Y', text: 'Langkah yang sangat berani dari Negara X. Kami akan mengamati perkembangan ini dengan cermat.', timestamp: new Date(Date.now() - 1200 * 1000).toISOString()}
-         ]
+         ],
+         newsType: 'domestik',
        }
     ];
     setNewsList(initialNews);

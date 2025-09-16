@@ -111,6 +111,7 @@ export default function AddNewsPage() {
   const [image, setImage] = React.useState<string | null>(null);
   const [taggedCountryId, setTaggedCountryId] = React.useState('');
   const [isMapUpdate, setIsMapUpdate] = React.useState(false);
+  const [newsType, setNewsType] = React.useState<'domestik' | 'internasional'>('domestik');
 
 
   React.useEffect(() => {
@@ -172,6 +173,7 @@ export default function AddNewsPage() {
       timestamp: new Date().toISOString(),
       likes: 0,
       comments: [],
+      newsType: newsType,
     };
 
     const storedNews = JSON.parse(localStorage.getItem('news') || '[]');
@@ -239,6 +241,20 @@ export default function AddNewsPage() {
                   <Label htmlFor="title">Judul Berita</Label>
                   <Input id="title" placeholder="Contoh: Negara X Mengubah Konstitusi" value={title} onChange={e => setTitle(e.target.value)} />
                 </div>
+                
+                <div className="grid gap-3">
+                  <Label htmlFor="news-type">Jenis Berita</Label>
+                   <Select onValueChange={(value: 'domestik' | 'internasional') => setNewsType(value)} value={newsType}>
+                    <SelectTrigger id="news-type">
+                      <SelectValue placeholder="Pilih jenis berita..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="domestik">Berita Domestik</SelectItem>
+                      <SelectItem value="internasional">Berita Internasional</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
 
                 <div className="grid gap-3">
                   <Label htmlFor="description">Deskripsi</Label>
