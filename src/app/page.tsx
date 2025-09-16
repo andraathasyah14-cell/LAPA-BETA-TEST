@@ -52,6 +52,13 @@ interface Country {
   registrationDate: string;
 }
 
+interface Comment {
+  id: string;
+  author: string;
+  text: string;
+  timestamp: string;
+}
+
 const RegisterCountryForm = ({
   onCountryRegistered,
   children,
@@ -116,13 +123,37 @@ const RegisterCountryForm = ({
   );
 };
 
-const NewsCard = () => {
+const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountry: Country | null }) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
+  const [likes, setLikes] = React.useState(0);
+  const [comments, setComments] = React.useState<Comment[]>([
+      { id: '1', author: 'Pemimpin Negara Y', text: 'Langkah yang sangat berani dari Negara X. Kami akan mengamati perkembangan ini dengan cermat.', timestamp: '20 menit yang lalu'}
+  ]);
+  const [newComment, setNewComment] = React.useState('');
+  const [showComments, setShowComments] = React.useState(true);
+
   const fullText = `Dalam sebuah pengumuman bersejarah, pemerintah Negara X mengumumkan adopsi Konstitusi 2025 yang baru, menggantikan undang-undang dasar sebelumnya. Langkah ini dipandang sebagai momen transformatif dalam sejarah bangsa, yang bertujuan untuk memperkuat demokrasi, hak asasi manusia, dan pembangunan berkelanjutan. Konstitusi baru ini mencakup beberapa perubahan fundamental, termasuk pengakuan hak-hak minoritas yang lebih luas, pembentukan lembaga anti-korupsi independen, dan komitmen yang lebih kuat terhadap perlindungan lingkungan. Presiden Negara X menyatakan bahwa konstitusi ini adalah 'fajar baru bagi bangsa kita', sementara kelompok oposisi menyuarakan keprihatinan tentang potensi pemusatan kekuasaan. Debat publik diperkirakan akan terus berlanjut seiring negara ini memasuki babak baru dalam pemerintahannya.`;
   
   const truncatedText = fullText.substring(0, 200) + '...';
 
   const toggleReadMore = () => setIsExpanded(!isExpanded);
+  const handleLike = () => setLikes(prev => prev + 1);
+
+  const handleCommentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim() || !userCountry) return;
+
+    const comment: Comment = {
+      id: crypto.randomUUID(),
+      author: userCountry.countryName,
+      text: newComment,
+      timestamp: 'Baru saja'
+    };
+
+    setComments(prev => [comment, ...prev]);
+    setNewComment('');
+  }
+
   const isMapUpdate = true; // Mock data for map update status
 
   return (
@@ -154,17 +185,47 @@ const NewsCard = () => {
         <CardFooter className="flex flex-col items-start gap-4">
            <div className="flex w-full justify-between items-center text-muted-foreground border-t pt-4">
               <div className="flex gap-4">
-                  <Button variant="ghost" size="sm">
-                      <ThumbsUp className="mr-2 h-4 w-4" /> Suka
+                  <Button variant="ghost" size="sm" onClick={handleLike}>
+                      <ThumbsUp className="mr-2 h-4 w-4" /> Suka ({likes})
                   </Button>
-                  <Button variant="ghost" size="sm">
-                      <MessageSquare className="mr-2 h-4 w-4" /> Komentar
+                  <Button variant="ghost" size="sm" onClick={() => setShowComments(!showComments)}>
+                      <MessageSquare className="mr-2 h-4 w-4" /> Komentar ({comments.length})
                   </Button>
                    <Button variant="ghost" size="sm">
                       <Share2 className="mr-2 h-4 w-4" /> Bagikan
                   </Button>
               </div>
            </div>
+           {showComments && (
+            <div className="w-full space-y-6 pt-4">
+              <h4 className="font-semibold text-lg">Komentar</h4>
+                <form onSubmit={handleCommentSubmit} className="space-y-4">
+                    <Label htmlFor="comment-input">Beri komentar sebagai {userCountry?.countryName || '...'}</Label>
+                    <Textarea 
+                        id="comment-input"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="Tulis komentarmu..."
+                        disabled={!userCountry}
+                    />
+                    <Button type="submit" disabled={!userCountry || !newComment.trim()}>
+                        Kirim Komentar
+                    </Button>
+                     {!userCountry && <p className="text-sm text-destructive">Anda harus mendaftarkan negara untuk berkomentar.</p>}
+                </form>
+              <div className="space-y-4">
+                {comments.map((comment) => (
+                  <div key={comment.id} className="flex flex-col gap-1 border-b pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{comment.author}</span>
+                      <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
+                    </div>
+                    <p>{comment.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardFooter>
       </Card>
   );
@@ -238,7 +299,7 @@ export default function Home() {
             </Alert>
           )}
 
-          <NewsCard />
+          <NewsCard countries={countries} userCountry={userCountry} />
 
         </main>
 
@@ -282,3 +343,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
