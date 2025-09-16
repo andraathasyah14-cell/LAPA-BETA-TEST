@@ -296,7 +296,7 @@ export default function Home() {
       </header>
        
       <div className="flex-1 grid grid-cols-12 gap-4 p-4 md:gap-8 md:p-10">
-        <main className="col-span-12 md:col-span-8 space-y-8 pb-20">
+        <main className="col-span-8 space-y-8 pb-20">
           {!userCountry && (
             <Alert variant="destructive" className="mb-6">
               <AlertTriangle className="h-4 w-4" />
@@ -314,7 +314,7 @@ export default function Home() {
 
         </main>
 
-        <aside className="col-span-12 md:col-span-4">
+        <aside className="col-span-4">
           <Card className="bg-card/80 sticky top-20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
