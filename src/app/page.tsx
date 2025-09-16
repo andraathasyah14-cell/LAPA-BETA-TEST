@@ -31,6 +31,7 @@ import {
   ThumbsUp,
   MessageSquare,
   Share2,
+  Map,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -41,6 +42,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 
 
 interface Country {
@@ -121,11 +123,18 @@ const NewsCard = () => {
   const truncatedText = fullText.substring(0, 200) + '...';
 
   const toggleReadMore = () => setIsExpanded(!isExpanded);
+  const isMapUpdate = true; // Mock data for map update status
 
   return (
-    <Card className="bg-un-blue-light/80 border-un-blue-dark">
+    <Card className="bg-un-blue-light/80 border-un-blue-dark relative">
+        {isMapUpdate && (
+          <Badge variant="destructive" className="absolute top-4 right-4 flex items-center gap-1">
+            <Map className="h-3 w-3" />
+            Update Peta
+          </Badge>
+        )}
         <CardHeader>
-          <CardTitle className="text-3xl font-bold">
+          <CardTitle className="text-3xl font-bold pr-28">
             Negara X Resmi Mengubah Konstitusi 2025
           </CardTitle>
           <div className="text-sm text-muted-foreground pt-2">
@@ -146,13 +155,13 @@ const NewsCard = () => {
            <div className="flex w-full justify-between items-center text-muted-foreground border-t pt-4">
               <div className="flex gap-4">
                   <Button variant="ghost" size="sm">
-                      <ThumbsUp className="mr-2" /> Suka
+                      <ThumbsUp className="mr-2 h-4 w-4" /> Suka
                   </Button>
                   <Button variant="ghost" size="sm">
-                      <MessageSquare className="mr-2" /> Komentar
+                      <MessageSquare className="mr-2 h-4 w-4" /> Komentar
                   </Button>
                    <Button variant="ghost" size="sm">
-                      <Share2 className="mr-2" /> Bagikan
+                      <Share2 className="mr-2 h-4 w-4" /> Bagikan
                   </Button>
               </div>
            </div>
@@ -174,7 +183,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col pb-20">
+    <div className="flex min-h-screen w-full flex-col bg-background">
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-header-background px-4 text-header-foreground md:px-6">
         <div className="flex items-center gap-2">
           <Landmark className="h-6 w-6" />
@@ -187,10 +196,12 @@ export default function Home() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <HomeIcon className="mr-2 h-4 w-4" />
-              <span>Home</span>
-            </DropdownMenuItem>
+            <Link href="/" passHref>
+                <DropdownMenuItem>
+                <HomeIcon className="mr-2 h-4 w-4" />
+                <span>Home</span>
+                </DropdownMenuItem>
+            </Link>
             <DropdownMenuItem>
               <BookUser className="mr-2 h-4 w-4" />
               <span>List Negara</span>
@@ -212,8 +223,8 @@ export default function Home() {
         </DropdownMenu>
       </header>
        
-      <div className="grid flex-1 grid-cols-12 gap-4 p-4 md:gap-8 md:p-10">
-        <main className="col-span-12 md:col-span-8 lg:col-span-9 space-y-8">
+      <div className="flex-1 grid grid-cols-12 gap-4 p-4 md:gap-8 md:p-10">
+        <main className="col-span-12 md:col-span-8 space-y-8 pb-20">
           {!userCountry && (
             <Alert variant="destructive" className="mb-6">
               <AlertTriangle className="h-4 w-4" />
@@ -281,8 +292,8 @@ export default function Home() {
           </div>
         </main>
 
-        <aside className="col-span-12 md:col-span-4 lg:col-span-3">
-          <Card className="bg-card/80">
+        <aside className="col-span-12 md:col-span-4">
+          <Card className="bg-card/80 sticky top-20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe />

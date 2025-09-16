@@ -113,15 +113,15 @@ export default function AddNewsPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col">
+    <div className="flex min-h-screen w-full flex-col bg-background">
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-header-background px-4 text-header-foreground md:px-6">
         <div className="flex items-center gap-2">
           <Landmark className="h-6 w-6" />
           <h1 className="text-xl font-bold">United Lapa National</h1>
         </div>
-        <Link href="/">
+        <Link href="/" passHref>
           <Button variant="ghost">
-            <ChevronLeft className="mr-2" />
+            <ChevronLeft className="mr-2 h-4 w-4" />
             Kembali ke Home
           </Button>
         </Link>
@@ -156,7 +156,9 @@ export default function AddNewsPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <RegisterCountryForm onCountryRegistered={handleCountryRegistered} />
+                  <RegisterCountryForm onCountryRegistered={handleCountryRegistered}>
+                     <Button variant="outline" className="w-full justify-start"> <PlusCircle className="mr-2 h-4 w-4"/> Negara belum terdaftar? Klik untuk menambah.</Button>
+                  </RegisterCountryForm>
                 </div>
                 
                  <div className="grid gap-3">
@@ -175,7 +177,10 @@ export default function AddNewsPage() {
 
                 <div className="grid gap-3">
                   <Label htmlFor="picture">Gambar Berita</Label>
-                  <Input id="picture" type="file" className="file:text-foreground"/>
+                  <div className="flex items-center gap-2">
+                    <Input id="picture" type="file" className="file:text-foreground"/>
+                    <Button variant="outline" size="icon"><Upload className="h-4 w-4"/></Button>
+                  </div>
                    <p className="text-sm text-muted-foreground">
                     Unggah gambar untuk memperkuat beritamu.
                   </p>
@@ -202,7 +207,8 @@ export default function AddNewsPage() {
 
                 <div className="flex items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                        <Label htmlFor="map-update" className="text-base">
+                        <Label htmlFor="map-update" className="text-base flex items-center">
+                        <Map className="mr-2 h-4 w-4" />
                         Update Peta?
                         </Label>
                         <p className="text-sm text-muted-foreground">
