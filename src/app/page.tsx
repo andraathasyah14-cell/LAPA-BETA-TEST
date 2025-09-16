@@ -240,56 +240,6 @@ export default function Home() {
 
           <NewsCard />
 
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Komentar</h2>
-            
-            {/* Form Komentar */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Beri Komentar</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                  <div className="grid gap-3">
-                    <Label htmlFor="comment-country">Beri komentar sebagai negara:</Label>
-                    <Select>
-                      <SelectTrigger id="comment-country">
-                        <SelectValue placeholder="Pilih negaramu..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {countries.map((country) => (
-                          <SelectItem key={country.id} value={country.id}>
-                            {country.countryName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                   <div className="grid gap-3">
-                    <Label htmlFor="comment-text">Komentar</Label>
-                    <Textarea id="comment-text" placeholder="Tulis komentarmu di sini..." />
-                  </div>
-              </CardContent>
-              <CardFooter>
-                  <Button>Kirim Komentar</Button>
-              </CardFooter>
-            </Card>
-
-            {/* Daftar Komentar */}
-            <div className="space-y-4">
-              <Card className="bg-card/80">
-                <CardHeader className="flex flex-row items-center gap-4">
-                  <User className="h-8 w-8" />
-                  <div>
-                    <p className="font-semibold">Pemimpin Negara Y</p>
-                    <p className="text-xs text-muted-foreground">20 menit yang lalu</p>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p>Langkah yang sangat berani dari Negara X. Kami akan mengamati perkembangan ini dengan cermat.</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
         </main>
 
         <aside className="col-span-12 md:col-span-4">
