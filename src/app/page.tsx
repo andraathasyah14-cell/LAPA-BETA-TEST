@@ -360,7 +360,6 @@ export default function Home() {
   const [userCountry, setUserCountry] = React.useState<Country | null>(null);
   const { toast } = useToast();
   const [isAlertDismissed, setIsAlertDismissed] = React.useState(true);
-  const [showDevInfoModal, setShowDevInfoModal] = React.useState(false);
   const [globalComments, setGlobalComments] = React.useState<Comment[]>([]);
   const [newGlobalComment, setNewGlobalComment] = React.useState('');
   const [showTermsModal, setShowTermsModal] = React.useState(false);
@@ -376,9 +375,6 @@ export default function Home() {
     } else {
       setIsAlertDismissed(false);
     }
-
-    const devInfoDismissed = sessionStorage.getItem('devInfoDismissed');
-    if (!devInfoDismissed) setShowDevInfoModal(true);
 
     const storedUserCountry = localStorage.getItem('userCountry');
     if (storedUserCountry) {
@@ -413,11 +409,6 @@ export default function Home() {
     return () => unsubscribe();
   }, []);
 
-  const handleDismissDevInfo = () => {
-    sessionStorage.setItem('devInfoDismissed', 'true');
-    setShowDevInfoModal(false);
-  };
-  
   const handleAcceptTerms = () => {
     localStorage.setItem('termsAccepted', 'true');
     setShowTermsModal(false);
@@ -596,21 +587,8 @@ export default function Home() {
           </Card>
         </aside>
       </div>
-      
-       <Dialog open={showDevInfoModal} onOpenChange={setShowDevInfoModal}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Informasi Developer</DialogTitle>
-              <DialogDescription>
-                Website ini dibuat oleh Andra.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogClose asChild>
-                <Button onClick={handleDismissDevInfo} variant="outline">Tutup</Button>
-            </DialogClose>
-          </DialogContent>
-        </Dialog>
-
     </div>
   );
 }
+
+    
