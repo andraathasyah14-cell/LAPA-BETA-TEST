@@ -31,12 +31,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import type { Country } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
-// Mock data for countries, this should be fetched from your database
-const mockCountries: Country[] = [
-  { id: '1', countryName: 'Republik Lapa', ownerName: 'John Doe', registrationDate: '' },
-  { id: '2', countryName: 'Kerajaan Bikar', ownerName: 'Jane Smith', registrationDate: '' },
-];
 
 const RegisterCountryForm = ({
   onCountryRegistered,
@@ -104,10 +100,22 @@ const RegisterCountryForm = ({
 
 
 export default function AddNewsPage() {
-  const [countries, setCountries] = React.useState<Country[]>(mockCountries);
+  const [countries, setCountries] = React.useState<Country[]>([
+    { id: '1', countryName: 'Republik Lapa', ownerName: 'John Doe', registrationDate: '' },
+    { id: '2', countryName: 'Kerajaan Bikar', ownerName: 'Jane Smith', registrationDate: '' },
+  ]);
   const [selectedCountry, setSelectedCountry] = React.useState<string>('');
+  const { toast } = useToast();
 
   const handleCountryRegistered = (country: Country) => {
+    if (countries.some(c => c.countryName.toLowerCase() === country.countryName.toLowerCase())) {
+      toast({
+        variant: "destructive",
+        title: "Pendaftaran Gagal",
+        description: `Negara dengan nama "${country.countryName}" sudah terdaftar.`,
+      })
+      return;
+    }
     setCountries(prev => [...prev, country]);
     setSelectedCountry(country.id);
   }

@@ -44,6 +44,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 
 interface Country {
@@ -142,11 +143,11 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim() || !userCountry) return;
+    if (!newComment.trim()) return;
 
     const comment: Comment = {
       id: crypto.randomUUID(),
-      author: userCountry.countryName,
+      author: userCountry?.countryName || 'Pengguna Anonim',
       text: newComment,
       timestamp: 'Baru saja'
     };
@@ -210,18 +211,16 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
           <div className="w-full space-y-6 pt-4 border-t">
             <h4 className="font-semibold text-lg">Komentar</h4>
               <form onSubmit={handleCommentSubmit} className="space-y-4">
-                  <Label htmlFor="comment-input" className="font-normal">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || '...'}</span></Label>
+                  <Label htmlFor="comment-input" className="font-normal">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || 'Pengguna Anonim'}</span></Label>
                   <Textarea 
                       id="comment-input"
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Tulis komentarmu..."
-                      disabled={!userCountry}
                   />
-                  <Button type="submit" disabled={!userCountry || !newComment.trim()}>
+                  <Button type="submit" disabled={!newComment.trim()}>
                       Kirim Komentar
                   </Button>
-                   {!userCountry && <p className="text-sm text-destructive">Anda harus mendaftarkan negara untuk berkomentar.</p>}
               </form>
             <div className="space-y-4">
               {comments.map((comment) => (
@@ -247,8 +246,17 @@ export default function Home() {
     { id: '2', countryName: 'Kerajaan Bikar', ownerName: 'Jane Smith', registrationDate: new Date().toISOString() },
   ]);
   const [userCountry, setUserCountry] = React.useState<Country | null>(null);
+  const { toast } = useToast();
 
   const handleCountryRegistered = (country: Country) => {
+    if (countries.some(c => c.countryName.toLowerCase() === country.countryName.toLowerCase())) {
+        toast({
+            variant: "destructive",
+            title: "Pendaftaran Gagal",
+            description: `Negara dengan nama "${country.countryName}" sudah terdaftar.`,
+        })
+        return;
+    }
     setCountries((prev) => [...prev, country]);
     setUserCountry(country);
   };
