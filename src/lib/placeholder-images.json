@@ -1,3 +1,10 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "link-preview-fallback",
+      "description": "Fallback image for link previews when one is not provided by OpenGraph.",
+      "imageUrl": "https://picsum.photos/seed/studiolink/1200/630",
+      "imageHint": "abstract technology"
+    }
+  ]
 }
