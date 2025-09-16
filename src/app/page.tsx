@@ -8,7 +8,7 @@ import {
   AlertTitle,
 } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,9 @@ import {
   Newspaper,
   Home as HomeIcon,
   PlusCircle,
+  ThumbsUp,
+  MessageSquare,
+  Share2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -36,6 +39,9 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 interface Country {
   id: string;
@@ -108,8 +114,58 @@ const RegisterCountryForm = ({
   );
 };
 
+const NewsCard = () => {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const fullText = `Dalam sebuah pengumuman bersejarah, pemerintah Negara X mengumumkan adopsi Konstitusi 2025 yang baru, menggantikan undang-undang dasar sebelumnya. Langkah ini dipandang sebagai momen transformatif dalam sejarah bangsa, yang bertujuan untuk memperkuat demokrasi, hak asasi manusia, dan pembangunan berkelanjutan. Konstitusi baru ini mencakup beberapa perubahan fundamental, termasuk pengakuan hak-hak minoritas yang lebih luas, pembentukan lembaga anti-korupsi independen, dan komitmen yang lebih kuat terhadap perlindungan lingkungan. Presiden Negara X menyatakan bahwa konstitusi ini adalah 'fajar baru bagi bangsa kita', sementara kelompok oposisi menyuarakan keprihatinan tentang potensi pemusatan kekuasaan. Debat publik diperkirakan akan terus berlanjut seiring negara ini memasuki babak baru dalam pemerintahannya.`;
+  
+  const truncatedText = fullText.substring(0, 200) + '...';
+
+  const toggleReadMore = () => setIsExpanded(!isExpanded);
+
+  return (
+    <Card className="bg-un-blue-light/80 border-un-blue-dark">
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold">
+            Negara X Resmi Mengubah Konstitusi 2025
+          </CardTitle>
+          <div className="text-sm text-muted-foreground pt-2">
+            <span>Diposting oleh: Negara X | 1 jam yang lalu</span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="whitespace-pre-wrap">
+            {isExpanded ? fullText : truncatedText}
+          </p>
+          {!isExpanded && (
+             <Button variant="link" onClick={toggleReadMore} className="p-0 h-auto text-blue-600">
+               Selanjutnya...
+            </Button>
+          )}
+        </CardContent>
+        <CardFooter className="flex flex-col items-start gap-4">
+           <div className="flex w-full justify-between items-center text-muted-foreground border-t pt-4">
+              <div className="flex gap-4">
+                  <Button variant="ghost" size="sm">
+                      <ThumbsUp className="mr-2" /> Suka
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                      <MessageSquare className="mr-2" /> Komentar
+                  </Button>
+                   <Button variant="ghost" size="sm">
+                      <Share2 className="mr-2" /> Bagikan
+                  </Button>
+              </div>
+           </div>
+        </CardFooter>
+      </Card>
+  );
+};
+
 export default function Home() {
-  const [countries, setCountries] = React.useState<Country[]>([]);
+  const [countries, setCountries] = React.useState<Country[]>([
+    { id: '1', countryName: 'Republik Lapa', ownerName: 'John Doe', registrationDate: new Date().toISOString() },
+    { id: '2', countryName: 'Kerajaan Bikar', ownerName: 'Jane Smith', registrationDate: new Date().toISOString() },
+  ]);
   const [userCountry, setUserCountry] = React.useState<Country | null>(null);
 
   const handleCountryRegistered = (country: Country) => {
@@ -157,7 +213,7 @@ export default function Home() {
       </header>
        
       <div className="grid flex-1 grid-cols-12 gap-4 p-4 md:gap-8 md:p-10">
-        <main className="col-span-12 md:col-span-8 lg:col-span-9">
+        <main className="col-span-12 md:col-span-8 lg:col-span-9 space-y-8">
           {!userCountry && (
             <Alert variant="destructive" className="mb-6">
               <AlertTriangle className="h-4 w-4" />
@@ -171,29 +227,43 @@ export default function Home() {
             </Alert>
           )}
 
-          <div className="space-y-8">
-            <Card className="bg-un-blue-light/80 border-un-blue-dark">
+          <NewsCard />
+
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Komentar</h2>
+            
+            {/* Form Komentar */}
+            <Card>
               <CardHeader>
-                <CardTitle className="text-3xl font-bold">
-                  Negara X Resmi Mengubah Konstitusi 2025
-                </CardTitle>
-                <div className="text-sm text-muted-foreground pt-2">
-                  <span>Diposting oleh: Negara X | 1 jam yang lalu</span>
-                </div>
+                <CardTitle className="text-lg">Beri Komentar</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p>
-                  Dalam sebuah pengumuman bersejarah, pemerintah Negara X
-                  mengumumkan adopsi Konstitusi 2025 yang baru, menggantikan
-                  undang-undang dasar sebelumnya. Langkah ini dipandang sebagai
-                  momen transformatif dalam sejarah bangsa, yang bertujuan untuk
-                  memperkuat demokrasi, hak asasi manusia, dan pembangunan
-                  berkelanjutan...
-                </p>
+              <CardContent className="space-y-4">
+                  <div className="grid gap-3">
+                    <Label htmlFor="comment-country">Beri komentar sebagai negara:</Label>
+                    <Select>
+                      <SelectTrigger id="comment-country">
+                        <SelectValue placeholder="Pilih negaramu..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {countries.map((country) => (
+                          <SelectItem key={country.id} value={country.id}>
+                            {country.countryName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                   <div className="grid gap-3">
+                    <Label htmlFor="comment-text">Komentar</Label>
+                    <Textarea id="comment-text" placeholder="Tulis komentarmu di sini..." />
+                  </div>
               </CardContent>
+              <CardFooter>
+                  <Button>Kirim Komentar</Button>
+              </CardFooter>
             </Card>
 
-            <h2 className="text-2xl font-bold">Komentar Pembaca</h2>
+            {/* Daftar Komentar */}
             <div className="space-y-4">
               <Card className="bg-card/80">
                 <CardHeader className="flex flex-row items-center gap-4">
@@ -228,9 +298,6 @@ export default function Home() {
                         <p className="font-semibold">{c.countryName}</p>
                         <p className="text-sm text-muted-foreground">{c.ownerName}</p>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(c.registrationDate).toLocaleDateString()}
-                      </span>
                     </li>
                   ))}
                 </ul>
