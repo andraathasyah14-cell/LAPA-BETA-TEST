@@ -476,7 +476,7 @@ export default function Home() {
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Peringatan</AlertTitle>
                 <AlertDescription className="flex items-center justify-between">
-                    <span>Negara Anda belum terdaftar. Segera lakukan registrasi.</span>
+                    <span>Anda belum terdaftar. Silakan registrasi.</span>
                      <RegisterCountryForm onCountryRegistered={handleCountryRegistered} />
                 </AlertDescription>
                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => setIsAlertDismissed(true)}>
