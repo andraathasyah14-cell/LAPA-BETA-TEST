@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import {
   Alert,
   AlertDescription,
@@ -138,10 +139,12 @@ export default function Home() {
               <BookUser className="mr-2 h-4 w-4" />
               <span>List Negara</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              <span>Tambah Berita</span>
-            </DropdownMenuItem>
+            <Link href="/add-news" passHref>
+               <DropdownMenuItem>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                <span>Tambah Berita</span>
+              </DropdownMenuItem>
+            </Link>
             <DropdownMenuSeparator />
              <RegisterCountryForm onCountryRegistered={handleCountryRegistered}>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
