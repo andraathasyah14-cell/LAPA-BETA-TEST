@@ -448,31 +448,6 @@ export default function Home() {
         </main>
 
         <aside className="col-span-12 md:col-span-4 space-y-6">
-          <Card className="bg-card/80 sticky top-20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe />
-                <span>Negara Terdaftar</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {countries.length > 0 ? (
-                <ul className="space-y-4">
-                  {countries.map((c) => (
-                    <li key={c.id} className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold">{c.countryName}</p>
-                        <p className="text-sm text-muted-foreground">{c.ownerName}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground">Belum ada negara yang terdaftar.</p>
-              )}
-            </CardContent>
-          </Card>
-          
            <Card className="bg-card/80">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
