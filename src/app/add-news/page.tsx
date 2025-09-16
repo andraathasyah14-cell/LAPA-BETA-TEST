@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ChevronLeft,
   PlusCircle,
@@ -106,6 +107,7 @@ export default function AddNewsPage() {
   ]);
   const [selectedCountry, setSelectedCountry] = React.useState<string>('');
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleCountryRegistered = (country: Country) => {
     if (countries.some(c => c.countryName.toLowerCase() === country.countryName.toLowerCase())) {
@@ -118,6 +120,18 @@ export default function AddNewsPage() {
     }
     setCountries(prev => [...prev, country]);
     setSelectedCountry(country.id);
+  }
+
+  const handlePublish = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Logic to save the news would go here
+    
+    toast({
+      title: "Berhasil!",
+      description: "Berita Anda telah berhasil dipublikasikan.",
+    });
+
+    router.push('/');
   }
 
   return (
@@ -144,7 +158,7 @@ export default function AddNewsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handlePublish}>
                 <div className="grid gap-3">
                   <Label htmlFor="owner-name">Nama Pemilik</Label>
                   <Input id="owner-name" placeholder="John Doe" />
