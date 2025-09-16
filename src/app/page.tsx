@@ -275,6 +275,18 @@ export default function Home() {
   const { toast } = useToast();
   const [isAlertDismissed, setIsAlertDismissed] = React.useState(false);
 
+  React.useEffect(() => {
+    const developerToastShown = sessionStorage.getItem('developerToastShown');
+    if (!developerToastShown) {
+      toast({
+        title: "Developer",
+        description: "Website ini dibuat oleh Andra.",
+      });
+      sessionStorage.setItem('developerToastShown', 'true');
+    }
+  }, [toast]);
+
+
   const handleCountryRegistered = (country: Country) => {
     if (countries.some(c => c.countryName.toLowerCase() === country.countryName.toLowerCase())) {
         toast({
