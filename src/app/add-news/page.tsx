@@ -8,7 +8,6 @@ import {
   PlusCircle,
   Upload,
   Map,
-  Tags,
   Landmark,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,7 +29,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import type { Country } from '@/lib/types';
+import type { Country, News } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 
@@ -101,13 +100,25 @@ const RegisterCountryForm = ({
 
 
 export default function AddNewsPage() {
-  const [countries, setCountries] = React.useState<Country[]>([
-    { id: '1', countryName: 'Republik Lapa', ownerName: 'John Doe', registrationDate: '' },
-    { id: '2', countryName: 'Kerajaan Bikar', ownerName: 'Jane Smith', registrationDate: '' },
-  ]);
-  const [selectedCountry, setSelectedCountry] = React.useState<string>('');
+  const [countries, setCountries] = React.useState<Country[]>([]);
   const { toast } = useToast();
   const router = useRouter();
+
+  const [ownerName, setOwnerName] = React.useState('');
+  const [countryId, setCountryId] = React.useState('');
+  const [title, setTitle] = React.useState('');
+  const [description, setDescription] = React.useState('');
+  const [image, setImage] = React.useState<string | null>(null);
+  const [taggedCountryId, setTaggedCountryId] = React.useState('');
+  const [isMapUpdate, setIsMapUpdate] = React.useState(false);
+
+
+  React.useEffect(() => {
+    const storedCountries = localStorage.getItem('countries');
+    if (storedCountries) {
+      setCountries(JSON.parse(storedCountries));
+    }
+  }, []);
 
   const handleCountryRegistered = (country: Country) => {
     if (countries.some(c => c.countryName.toLowerCase() === country.countryName.toLowerCase())) {
@@ -118,13 +129,54 @@ export default function AddNewsPage() {
       })
       return;
     }
-    setCountries(prev => [...prev, country]);
-    setSelectedCountry(country.id);
+    const updatedCountries = [...countries, country];
+    setCountries(updatedCountries);
+    localStorage.setItem('countries', JSON.stringify(updatedCountries));
+    setCountryId(country.id);
   }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic to save the news would go here
+    if (!countryId || !title || !description) {
+        toast({
+            variant: "destructive",
+            title: "Gagal Publikasi",
+            description: "Harap isi semua kolom yang wajib diisi (Negara, Judul, Deskripsi).",
+        });
+        return;
+    }
+
+    const country = countries.find(c => c.id === countryId);
+    if (!country) return;
+
+    const newNews: News = {
+      id: crypto.randomUUID(),
+      title,
+      description,
+      imageUrl: image || `https://picsum.photos/seed/${crypto.randomUUID()}/1200/400`,
+      imageHint: "custom image",
+      authorCountry: country,
+      taggedCountry: countries.find(c => c.id === taggedCountryId),
+      isMapUpdate,
+      timestamp: new Date().toISOString(),
+      likes: 0,
+      comments: [],
+    };
+
+    const storedNews = JSON.parse(localStorage.getItem('news') || '[]');
+    const updatedNews = [newNews, ...storedNews];
+    localStorage.setItem('news', JSON.stringify(updatedNews));
     
     toast({
       title: "Berhasil!",
@@ -161,12 +213,12 @@ export default function AddNewsPage() {
               <form className="space-y-6" onSubmit={handlePublish}>
                 <div className="grid gap-3">
                   <Label htmlFor="owner-name">Nama Pemilik</Label>
-                  <Input id="owner-name" placeholder="John Doe" />
+                  <Input id="owner-name" placeholder="John Doe" value={ownerName} onChange={e => setOwnerName(e.target.value)} />
                 </div>
 
                 <div className="grid gap-3">
                   <Label htmlFor="country">Nama Negara</Label>
-                   <Select onValueChange={setSelectedCountry} value={selectedCountry}>
+                   <Select onValueChange={setCountryId} value={countryId}>
                     <SelectTrigger id="country">
                       <SelectValue placeholder="Pilih negara Anda..." />
                     </SelectTrigger>
@@ -185,7 +237,7 @@ export default function AddNewsPage() {
                 
                  <div className="grid gap-3">
                   <Label htmlFor="title">Judul Berita</Label>
-                  <Input id="title" placeholder="Contoh: Negara X Mengubah Konstitusi" />
+                  <Input id="title" placeholder="Contoh: Negara X Mengubah Konstitusi" value={title} onChange={e => setTitle(e.target.value)} />
                 </div>
 
                 <div className="grid gap-3">
@@ -194,23 +246,25 @@ export default function AddNewsPage() {
                     id="description"
                     placeholder="Tuliskan isi berita atau update negaramu di sini..."
                     className="min-h-[150px]"
+                    value={description} 
+                    onChange={e => setDescription(e.target.value)}
                   />
                 </div>
 
                 <div className="grid gap-3">
                   <Label htmlFor="picture">Gambar Berita</Label>
                   <div className="flex items-center gap-2">
-                    <Input id="picture" type="file" className="file:text-foreground"/>
+                    <Input id="picture" type="file" className="file:text-foreground" onChange={handleImageUpload} accept="image/*"/>
                     <Button variant="outline" size="icon"><Upload className="h-4 w-4"/></Button>
                   </div>
                    <p className="text-sm text-muted-foreground">
-                    Unggah gambar untuk memperkuat beritamu.
+                    Unggah gambar untuk memperkuat beritamu. (Opsional)
                   </p>
                 </div>
                 
                 <div className="grid gap-3">
                    <Label htmlFor="tag-countries">Tag Negara Lain</Label>
-                   <Select>
+                   <Select onValueChange={setTaggedCountryId} value={taggedCountryId}>
                     <SelectTrigger id="tag-countries">
                       <SelectValue placeholder="Pilih negara untuk di-tag..." />
                     </SelectTrigger>
@@ -223,7 +277,7 @@ export default function AddNewsPage() {
                     </SelectContent>
                   </Select>
                   <p className="text-sm text-muted-foreground">
-                    Sebut negara lain yang terlibat dalam beritamu.
+                    Sebut negara lain yang terlibat dalam beritamu. (Opsional)
                   </p>
                 </div>
 
@@ -237,7 +291,7 @@ export default function AddNewsPage() {
                         Aktifkan jika berita ini menyebabkan perubahan pada peta global.
                         </p>
                     </div>
-                    <Switch id="map-update" />
+                    <Switch id="map-update" checked={isMapUpdate} onCheckedChange={setIsMapUpdate}/>
                 </div>
 
                 <Button type="submit" size="lg" className="w-full">

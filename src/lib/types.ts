@@ -5,20 +5,23 @@ export interface Country {
   registrationDate: string;
 }
 
-export interface Update {
+export interface News {
   id: string;
-  countryId: string;
   title: string;
-  content: string;
-  year: number;
-  date: string;
-  author: string;
+  description: string;
+  imageUrl: string;
+  imageHint: string;
+  authorCountry: Country;
+  taggedCountry?: Country;
+  isMapUpdate: boolean;
+  timestamp: string;
+  likes: number;
+  comments: Comment[];
 }
 
 export interface Comment {
   id: string;
-  updateId: string;
-  content: string;
   author: string;
-  date: string;
+  text: string;
+  timestamp: string;
 }

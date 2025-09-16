@@ -23,9 +23,6 @@ import { Label } from '@/components/ui/label';
 import {
   Globe,
   Landmark,
-  User,
-  Menu,
-  AlertTriangle,
   BookUser,
   Newspaper,
   Home as HomeIcon,
@@ -33,8 +30,9 @@ import {
   ThumbsUp,
   MessageSquare,
   Share2,
-  Map,
   X,
+  Menu,
+  AlertTriangle
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -44,25 +42,13 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Resizable } from 're-resizable';
-
-interface Country {
-  id: string;
-  countryName: string;
-  ownerName: string;
-  registrationDate: string;
-}
-
-interface Comment {
-  id: string;
-  author: string;
-  text: string;
-  timestamp: string;
-}
+import type { Country, News, Comment } from '@/lib/types';
+import { formatDistanceToNow } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 const RegisterCountryForm = ({
   onCountryRegistered,
@@ -129,18 +115,15 @@ const RegisterCountryForm = ({
   );
 };
 
-const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountry: Country | null }) => {
-  const [likes, setLikes] = React.useState(0);
-  const [comments, setComments] = React.useState<Comment[]>([
-      { id: '1', author: 'Pemimpin Negara Y', text: 'Langkah yang sangat berani dari Negara X. Kami akan mengamati perkembangan ini dengan cermat.', timestamp: '20 menit yang lalu'}
-  ]);
-  const [newComment, setNewComment] = React.useState('');
+const NewsCard = ({ news, userCountry, onNewsUpdate }: { news: News, userCountry: Country | null, onNewsUpdate: (updatedNews: News) => void }) => {
   const [showComments, setShowComments] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-
-  const fullText = `Dalam sebuah pengumuman bersejarah, pemerintah Negara X mengumumkan adopsi Konstitusi 2025 yang baru, menggantikan undang-undang dasar sebelumnya. Langkah ini dipandang sebagai momen transformatif dalam sejarah bangsa, yang bertujuan untuk memperkuat demokrasi, hak asasi manusia, dan pembangunan berkelanjutan. Konstitusi baru ini mencakup beberapa perubahan fundamental, termasuk pengakuan hak-hak minoritas yang lebih luas, pembentukan lembaga anti-korupsi independen, dan komitmen yang lebih kuat terhadap perlindungan lingkungan. Presiden Negara X menyatakan bahwa konstitusi ini adalah 'fajar baru bagi bangsa kita', sementara kelompok oposisi menyuarakan keprihatinan tentang potensi pemusatan kekuasaan. Debat publik diperkirakan akan terus berlanjut seiring negara ini memasuki babak baru dalam pemerintahannya.`;
+  const [newComment, setNewComment] = React.useState('');
   
-  const handleLike = () => setLikes(prev => prev + 1);
+  const handleLike = () => {
+      const updatedNews = { ...news, likes: news.likes + 1 };
+      onNewsUpdate(updatedNews);
+  };
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,14 +133,17 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
       id: crypto.randomUUID(),
       author: userCountry?.countryName || 'Pengguna Anonim',
       text: newComment,
-      timestamp: 'Baru saja'
+      timestamp: new Date().toISOString()
     };
-
-    setComments(prev => [comment, ...prev]);
+    
+    const updatedNews = { ...news, comments: [comment, ...news.comments] };
+    onNewsUpdate(updatedNews);
     setNewComment('');
   }
-
-  const isMapUpdate = true; // Mock data for map update status
+  
+  const timeAgo = (timestamp: string) => {
+    return formatDistanceToNow(new Date(timestamp), { addSuffix: true, locale: id });
+  }
 
   return (
     <>
@@ -166,65 +152,67 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
         className="w-[190px] bg-card p-1.5 rounded-lg overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-shadow duration-300"
       >
         <CardHeader className="p-0 relative">
-          {isMapUpdate && (
+          {news.isMapUpdate && (
             <Badge variant="destructive" className="absolute top-2 right-2 z-10 text-xs px-2 py-1">
               Update Peta
             </Badge>
           )}
           <div className="relative h-[100px] w-full">
             <Image 
-              src="https://picsum.photos/seed/politics/1200/400" 
+              src={news.imageUrl} 
               alt="News image" 
               fill 
               className="object-cover rounded-t-md" 
-              data-ai-hint="political assembly" 
+              data-ai-hint={news.imageHint} 
             />
           </div>
         </CardHeader>
         <CardContent className="p-2">
-          <p className="text-xs font-semibold text-blue-500 uppercase">Perubahan Konstitusi</p>
+          <p className="text-xs font-semibold text-blue-500 uppercase">
+             {news.taggedCountry ? `Hubungan Diplomatik` : `Berita Domestik`}
+          </p>
           <h3 className="font-bold text-sm leading-tight mt-1 text-card-foreground">
-            Negara X Resmi Mengubah Konstitusi 2025
+            {news.title}
           </h3>
           <p className="text-xs text-muted-foreground mt-3">
-            Oleh <span className="font-semibold text-foreground/80">Negara X</span>
+            Oleh <span className="font-semibold text-foreground/80">{news.authorCountry.countryName}</span>
           </p>
         </CardContent>
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
          <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] grid grid-rows-[auto_1fr] bg-card rounded-lg">
-            <div className="overflow-y-auto">
-                <DialogHeader className="p-4 md:p-6 pb-0">
+             <div className="overflow-y-auto">
+                <DialogHeader className="p-4 md:p-6 pb-0 sticky top-0 bg-card/95 backdrop-blur-sm z-10">
                     <DialogTitle className="text-xl md:text-2xl font-bold">
-                        Negara X Resmi Mengubah Konstitusi 2025
+                        {news.title}
                     </DialogTitle>
                     <div className="text-xs md:text-sm text-muted-foreground pt-1">
-                        <span>Diposting oleh: <strong>Negara X</strong> | 1 jam yang lalu</span>
+                        <span>Diposting oleh: <strong>{news.authorCountry.countryName}</strong> | {timeAgo(news.timestamp)}</span>
                     </div>
                 </DialogHeader>
                 <div className="px-4 md:px-6">
                   <div className="relative h-48 md:h-60 w-full my-4 rounded-lg overflow-hidden">
                       <Image 
-                          src="https://picsum.photos/seed/politics/1200/400" 
+                          src={news.imageUrl} 
                           alt="News image" 
                           fill 
                           className="object-cover" 
-                          data-ai-hint="political assembly" 
+                          data-ai-hint={news.imageHint} 
                       />
                   </div>
                   <p className="whitespace-pre-wrap text-sm md:text-base text-foreground/90">
-                    {fullText}
+                    {news.description}
                   </p>
                 </div>
                 <CardFooter className="flex flex-col items-start gap-3 p-4 md:p-6 bg-muted/50 mt-4 rounded-b-lg">
                   <div className="flex w-full justify-between items-center text-muted-foreground">
                       <div className="flex gap-1 md:gap-2">
                           <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50 text-xs md:text-sm">
-                              <ThumbsUp className="mr-1 md:mr-2 h-4 w-4" /> Suka ({likes})
+                              <ThumbsUp className="mr-1 md:mr-2 h-4 w-4" /> Suka ({news.likes})
                           </Button>
                           <Button variant="ghost" size="sm" onClick={() => setShowComments(!showComments)} className="hover:bg-accent/50 text-xs md:text-sm">
-                              <MessageSquare className="mr-1 md:mr-2 h-4 w-4" /> Komentar ({comments.length})
+                              <MessageSquare className="mr-1 md:mr-2 h-4 w-4" /> Komentar ({news.comments.length})
                           </Button>
                           <Button variant="ghost" size="sm" className="hover:bg-accent/50 text-xs md:text-sm">
                               <Share2 className="mr-1 md:mr-2 h-4 w-4" /> Bagikan
@@ -247,11 +235,11 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
                             </Button>
                         </form>
                       <div className="space-y-4">
-                        {comments.map((comment) => (
+                        {news.comments.map((comment) => (
                           <div key={comment.id} className="flex flex-col gap-1 border-b pb-3 last:border-none">
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-sm md:text-base">{comment.author}</span>
-                              <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
+                              <span className="text-xs text-muted-foreground">{timeAgo(comment.timestamp)}</span>
                             </div>
                             <p className="text-sm md:text-base">{comment.text}</p>
                           </div>
@@ -260,7 +248,7 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
                     </div>
                   )}
                 </CardFooter>
-              </div>
+            </div>
         </DialogContent>
       </Dialog>
     </>
@@ -268,26 +256,69 @@ const NewsCard = ({ countries, userCountry }: { countries: Country[], userCountr
 };
 
 export default function Home() {
-  const [countries, setCountries] = React.useState<Country[]>([
-    { id: '1', countryName: 'Republik Lapa', ownerName: 'John Doe', registrationDate: new Date().toISOString() },
-    { id: '2', countryName: 'Kerajaan Bikar', ownerName: 'Jane Smith', registrationDate: new Date().toISOString() },
-  ]);
+  const [countries, setCountries] = React.useState<Country[]>([]);
+  const [newsList, setNewsList] = React.useState<News[]>([]);
   const [userCountry, setUserCountry] = React.useState<Country | null>(null);
   const { toast } = useToast();
   const [isAlertDismissed, setIsAlertDismissed] = React.useState(false);
   const [showDevInfoModal, setShowDevInfoModal] = React.useState(false);
 
   React.useEffect(() => {
+    // Dev info modal
     const devInfoDismissed = sessionStorage.getItem('devInfoDismissed');
     if (!devInfoDismissed) {
       setShowDevInfoModal(true);
     }
+
+    // Load countries from localStorage
+    const storedCountries = localStorage.getItem('countries');
+    const initialCountries = storedCountries ? JSON.parse(storedCountries) : [
+      { id: '1', countryName: 'Republik Lapa', ownerName: 'John Doe', registrationDate: new Date().toISOString() },
+      { id: '2', countryName: 'Kerajaan Bikar', ownerName: 'Jane Smith', registrationDate: new Date().toISOString() },
+    ];
+    setCountries(initialCountries);
+    if (!storedCountries) {
+      localStorage.setItem('countries', JSON.stringify(initialCountries));
+    }
+
+
+    // Load news from localStorage
+    const storedNews = localStorage.getItem('news');
+    const initialNews = storedNews ? JSON.parse(storedNews) : [
+       { 
+         id: '1', 
+         title: 'Negara X Resmi Mengubah Konstitusi 2025', 
+         description: `Dalam sebuah pengumuman bersejarah, pemerintah Negara X mengumumkan adopsi Konstitusi 2025 yang baru, menggantikan undang-undang dasar sebelumnya. Langkah ini dipandang sebagai momen transformatif dalam sejarah bangsa, yang bertujuan untuk memperkuat demokrasi, hak asasi manusia, dan pembangunan berkelanjutan. Konstitusi baru ini mencakup beberapa perubahan fundamental, termasuk pengakuan hak-hak minoritas yang lebih luas, pembentukan lembaga anti-korupsi independen, dan komitmen yang lebih kuat terhadap perlindungan lingkungan. Presiden Negara X menyatakan bahwa konstitusi ini adalah 'fajar baru bagi bangsa kita', sementara kelompok oposisi menyuarakan keprihatinan tentang potensi pemusatan kekuasaan. Debat publik diperkirakan akan terus berlanjut seiring negara ini memasuki babak baru dalam pemerintahannya.`,
+         imageUrl: 'https://picsum.photos/seed/politics/1200/400',
+         imageHint: 'political assembly',
+         authorCountry: initialCountries[0],
+         taggedCountry: undefined,
+         isMapUpdate: true,
+         timestamp: new Date(Date.now() - 3600 * 1000).toISOString(),
+         likes: 12,
+         comments: [
+            { id: '1', author: 'Pemimpin Negara Y', text: 'Langkah yang sangat berani dari Negara X. Kami akan mengamati perkembangan ini dengan cermat.', timestamp: new Date(Date.now() - 1200 * 1000).toISOString()}
+         ]
+       }
+    ];
+    setNewsList(initialNews);
+     if (!storedNews) {
+      localStorage.setItem('news', JSON.stringify(initialNews));
+    }
+
   }, []);
 
   const handleDismissDevInfo = () => {
     sessionStorage.setItem('devInfoDismissed', 'true');
     setShowDevInfoModal(false);
   };
+  
+  const handleNewsUpdate = (updatedNews: News) => {
+    const updatedList = newsList.map(news => news.id === updatedNews.id ? updatedNews : news);
+    setNewsList(updatedList);
+    localStorage.setItem('news', JSON.stringify(updatedList));
+  };
+
 
   const handleCountryRegistered = (country: Country) => {
     if (countries.some(c => c.countryName.toLowerCase() === country.countryName.toLowerCase())) {
@@ -298,7 +329,9 @@ export default function Home() {
         })
         return;
     }
-    setCountries((prev) => [...prev, country]);
+    const updatedCountries = [...countries, country];
+    setCountries(updatedCountries);
+    localStorage.setItem('countries', JSON.stringify(updatedCountries));
     setUserCountry(country);
   };
 
@@ -365,8 +398,18 @@ export default function Home() {
           )}
 
           <div className="flex flex-wrap gap-4">
-             <NewsCard countries={countries} userCountry={userCountry} />
-             {/* Add more NewsCard components here if needed */}
+             {newsList.length > 0 ? (
+                newsList.map(news => (
+                    <NewsCard 
+                        key={news.id} 
+                        news={news} 
+                        userCountry={userCountry} 
+                        onNewsUpdate={handleNewsUpdate} 
+                    />
+                ))
+             ) : (
+                <p>Belum ada berita yang dipublikasikan.</p>
+             )}
           </div>
 
         </main>
@@ -398,7 +441,7 @@ export default function Home() {
           </Card>
         </aside>
       </div>
-
+      
        <Dialog open={showDevInfoModal} onOpenChange={setShowDevInfoModal}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
@@ -410,8 +453,7 @@ export default function Home() {
             <Button onClick={handleDismissDevInfo} variant="outline">Tutup</Button>
           </DialogContent>
         </Dialog>
+
     </div>
   );
 }
-
-    
