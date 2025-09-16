@@ -34,7 +34,7 @@ import type { Country, News } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, doc, setDoc, Timestamp, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, Timestamp, query, where } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 
 

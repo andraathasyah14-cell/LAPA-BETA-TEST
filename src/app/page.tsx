@@ -19,6 +19,7 @@ import {
   DialogTrigger,
   DialogFooter,
   DialogClose,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -370,7 +371,11 @@ export default function Home() {
     if (!termsAccepted) setShowTermsModal(true);
 
     const alertDismissed = localStorage.getItem('unregisteredAlertDismissed');
-    if (alertDismissed === 'true') setIsAlertDismissed(true); else setIsAlertDismissed(false);
+    if (alertDismissed === 'true') {
+      setIsAlertDismissed(true);
+    } else {
+      setIsAlertDismissed(false);
+    }
 
     const devInfoDismissed = sessionStorage.getItem('devInfoDismissed');
     if (!devInfoDismissed) setShowDevInfoModal(true);
