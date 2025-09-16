@@ -79,26 +79,18 @@ const RegisterCountryForm = ({
         return;
     }
 
-    // Check if country already exists (case-insensitive)
-    const countriesRef = collection(db, 'countries');
-    const q = query(countriesRef, where("countryName", ">=", formattedCountryName.toLowerCase()), where("countryName", "<=", formattedCountryName.toLowerCase() + '\uf8ff'));
-    
     try {
+        const countriesRef = collection(db, 'countries');
+        const q = query(countriesRef, where("countryName", "==", formattedCountryName));
         const querySnapshot = await getDocs(q);
-        let exists = false;
-        querySnapshot.forEach((doc) => {
-            if (doc.data().countryName.toLowerCase() === formattedCountryName.toLowerCase()) {
-                exists = true;
-            }
-        });
 
-        if (exists) {
-           toast({
-            variant: "destructive",
-            title: "Pendaftaran Gagal",
-            description: `Negara dengan nama "${formattedCountryName}" sudah terdaftar.`,
-          });
-          return;
+        if (!querySnapshot.empty) {
+            toast({
+                variant: "destructive",
+                title: "Pendaftaran Gagal",
+                description: `Negara dengan nama "${formattedCountryName}" sudah terdaftar.`,
+            });
+            return;
         }
 
         const newCountry: Omit<Country, 'id'> = {
@@ -114,6 +106,11 @@ const RegisterCountryForm = ({
         setCountryName('');
         setOwnerName('');
         setOpen(false);
+
+        toast({
+            title: "Pendaftaran Berhasil",
+            description: `Negara "${finalCountry.countryName}" telah terdaftar dan dipilih.`,
+        });
 
     } catch(error) {
        console.error("Error registering country:", error);
@@ -195,10 +192,6 @@ export default function AddNewsPage() {
     const updatedCountries = [...countries, country].sort((a, b) => a.countryName.localeCompare(b.countryName));
     setCountries(updatedCountries);
     setCountryId(country.id);
-     toast({
-        title: "Pendaftaran Berhasil",
-        description: `Negara "${country.countryName}" telah terdaftar dan dipilih.`,
-      })
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -412,3 +405,5 @@ export default function AddNewsPage() {
     </div>
   );
 }
+
+    

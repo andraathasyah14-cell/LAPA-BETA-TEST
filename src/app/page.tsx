@@ -19,7 +19,6 @@ import {
   DialogTrigger,
   DialogFooter,
   DialogClose,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -131,25 +130,18 @@ const RegisterCountryForm = ({
         return;
     }
 
-    const countriesRef = collection(db, 'countries');
-    const q = query(countriesRef, where("countryName", ">=", formattedCountryName.toLowerCase()), where("countryName", "<=", formattedCountryName.toLowerCase() + '\uf8ff'));
-
     try {
+        const countriesRef = collection(db, 'countries');
+        const q = query(countriesRef, where("countryName", "==", formattedCountryName));
         const querySnapshot = await getDocs(q);
-        let exists = false;
-        querySnapshot.forEach((doc) => {
-            if (doc.data().countryName.toLowerCase() === formattedCountryName.toLowerCase()) {
-                exists = true;
-            }
-        });
 
-        if (exists) {
-          toast({
-            variant: "destructive",
-            title: "Pendaftaran Gagal",
-            description: `Negara dengan nama "${formattedCountryName}" sudah terdaftar.`,
-          });
-          return;
+        if (!querySnapshot.empty) {
+            toast({
+                variant: "destructive",
+                title: "Pendaftaran Gagal",
+                description: `Negara dengan nama "${formattedCountryName}" sudah terdaftar.`,
+            });
+            return; 
         }
 
         const newCountryData: Omit<Country, 'id'> = {
@@ -638,3 +630,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
