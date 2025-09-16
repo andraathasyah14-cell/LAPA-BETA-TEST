@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -240,8 +241,8 @@ const NewsCard = ({ news, userCountry, onNewsUpdate }: { news: News, userCountry
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-         <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] grid grid-rows-[auto_minmax(0,1fr)_auto] bg-card rounded-lg">
-            <DialogHeader className="p-4 md:p-6 pb-0 sticky top-0 bg-card/95 backdrop-blur-sm z-10">
+        <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] flex flex-col bg-card rounded-lg">
+            <DialogHeader className="p-4 md:p-6 pb-0 sticky top-0 bg-card/95 backdrop-blur-sm z-10 shrink-0">
                 <DialogTitle className="text-xl md:text-2xl font-bold">
                     {news.title}
                 </DialogTitle>
@@ -263,7 +264,7 @@ const NewsCard = ({ news, userCountry, onNewsUpdate }: { news: News, userCountry
                 {news.description}
               </p>
             </div>
-            <CardFooter className="flex flex-col items-start gap-3 p-4 md:p-6 bg-muted/50 mt-4 rounded-b-lg">
+            <CardFooter className="flex flex-col items-start gap-3 p-4 md:p-6 bg-muted/50 mt-4 rounded-b-lg shrink-0">
               <div className="flex w-full justify-between items-center text-muted-foreground">
                   <div className="flex gap-1 md:gap-2">
                       <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50 text-xs md:text-sm">
