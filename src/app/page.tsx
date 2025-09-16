@@ -19,6 +19,7 @@ import {
   DialogDescription,
   DialogTrigger,
   DialogFooter,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -242,71 +243,71 @@ const NewsCard = ({ news, userCountry, onNewsUpdate }: { news: News, userCountry
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] flex flex-col bg-card rounded-lg">
-            <DialogHeader className="p-4 md:p-6 pb-0 sticky top-0 bg-card/95 backdrop-blur-sm z-10 shrink-0">
-                <DialogTitle className="text-xl md:text-2xl font-bold">
-                    {news.title}
-                </DialogTitle>
-                <div className="text-xs md:text-sm text-muted-foreground pt-1">
-                    <span>Diposting oleh: <strong>{news.authorCountry.countryName}</strong> | {timeAgo(news.timestamp)}</span>
-                </div>
-            </DialogHeader>
-            <div className="overflow-y-auto px-4 md:px-6">
-              <div className="relative h-48 md:h-60 w-full my-4 rounded-lg overflow-hidden">
-                  <Image 
-                      src={news.imageUrl} 
-                      alt="News image" 
-                      fill 
-                      className="object-cover" 
-                      data-ai-hint={news.imageHint} 
-                  />
+          <DialogHeader className="p-4 md:p-6 pb-0 sticky top-0 bg-card/95 backdrop-blur-sm z-10 shrink-0">
+              <DialogTitle className="text-xl md:text-2xl font-bold">
+                  {news.title}
+              </DialogTitle>
+              <div className="text-xs md:text-sm text-muted-foreground pt-1">
+                  <span>Diposting oleh: <strong>{news.authorCountry.countryName}</strong> | {timeAgo(news.timestamp)}</span>
               </div>
-              <p className="whitespace-pre-wrap text-sm md:text-base text-foreground/90">
-                {news.description}
-              </p>
+          </DialogHeader>
+          <div className="overflow-y-auto px-4 md:px-6">
+            <div className="relative h-48 md:h-60 w-full my-4 rounded-lg overflow-hidden">
+                <Image 
+                    src={news.imageUrl} 
+                    alt="News image" 
+                    fill 
+                    className="object-cover" 
+                    data-ai-hint={news.imageHint} 
+                />
             </div>
-            <CardFooter className="flex flex-col items-start gap-3 p-4 md:p-6 bg-muted/50 mt-4 rounded-b-lg shrink-0">
-              <div className="flex w-full justify-between items-center text-muted-foreground">
-                  <div className="flex gap-1 md:gap-2">
-                      <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50 text-xs md:text-sm">
-                          <ThumbsUp className="mr-1 md:mr-2 h-4 w-4" /> Suka ({news.likes})
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => setShowComments(!showComments)} className="hover:bg-accent/50 text-xs md:text-sm">
-                          <MessageSquare className="mr-1 md:mr-2 h-4 w-4" /> Komentar ({news.comments.length})
-                      </Button>
-                      <Button variant="ghost" size="sm" className="hover:bg-accent/50 text-xs md:text-sm">
-                          <Share2 className="mr-1 md:mr-2 h-4 w-4" /> Bagikan
-                      </Button>
-                  </div>
-              </div>
-              {showComments && (
-                <div className="w-full space-y-4 pt-4 border-t">
-                  <h4 className="font-semibold text-base md:text-lg">Komentar</h4>
-                    <form onSubmit={handleCommentSubmit} className="space-y-3">
-                        <Label htmlFor="comment-input-dialog" className="font-normal text-xs md:text-sm">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || 'Pengguna Anonim'}</span></Label>
-                        <Textarea 
-                            id="comment-input-dialog"
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Tulis komentarmu..."
-                        />
-                        <Button type="submit" size="sm" disabled={!newComment.trim()}>
-                            Kirim Komentar
-                        </Button>
-                    </form>
-                  <div className="space-y-4">
-                    {news.comments.map((comment) => (
-                      <div key={comment.id} className="flex flex-col gap-1 border-b pb-3 last:border-none">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-sm md:text-base">{comment.author}</span>
-                          <span className="text-xs text-muted-foreground">{timeAgo(comment.timestamp)}</span>
-                        </div>
-                        <p className="text-sm md:text-base">{comment.text}</p>
-                      </div>
-                    ))}
-                  </div>
+            <p className="whitespace-pre-wrap text-sm md:text-base text-foreground/90">
+              {news.description}
+            </p>
+          </div>
+          <CardFooter className="flex flex-col items-start gap-3 p-4 md:p-6 bg-muted/50 mt-4 rounded-b-lg shrink-0">
+            <div className="flex w-full justify-between items-center text-muted-foreground">
+                <div className="flex gap-1 md:gap-2">
+                    <Button variant="ghost" size="sm" onClick={handleLike} className="hover:bg-accent/50 text-xs md:text-sm">
+                        <ThumbsUp className="mr-1 md:mr-2 h-4 w-4" /> Suka ({news.likes})
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setShowComments(!showComments)} className="hover:bg-accent/50 text-xs md:text-sm">
+                        <MessageSquare className="mr-1 md:mr-2 h-4 w-4" /> Komentar ({news.comments.length})
+                    </Button>
+                    <Button variant="ghost" size="sm" className="hover:bg-accent/50 text-xs md:text-sm">
+                        <Share2 className="mr-1 md:mr-2 h-4 w-4" /> Bagikan
+                    </Button>
                 </div>
-              )}
-            </CardFooter>
+            </div>
+            {showComments && (
+              <div className="w-full space-y-4 pt-4 border-t">
+                <h4 className="font-semibold text-base md:text-lg">Komentar</h4>
+                  <form onSubmit={handleCommentSubmit} className="space-y-3">
+                      <Label htmlFor="comment-input-dialog" className="font-normal text-xs md:text-sm">Beri komentar sebagai <span className="font-semibold">{userCountry?.countryName || 'Pengguna Anonim'}</span></Label>
+                      <Textarea 
+                          id="comment-input-dialog"
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          placeholder="Tulis komentarmu..."
+                      />
+                      <Button type="submit" size="sm" disabled={!newComment.trim()}>
+                          Kirim Komentar
+                      </Button>
+                  </form>
+                <div className="space-y-4">
+                  {news.comments.map((comment) => (
+                    <div key={comment.id} className="flex flex-col gap-1 border-b pb-3 last:border-none">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm md:text-base">{comment.author}</span>
+                        <span className="text-xs text-muted-foreground">{timeAgo(comment.timestamp)}</span>
+                      </div>
+                      <p className="text-sm md:text-base">{comment.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardFooter>
         </DialogContent>
       </Dialog>
     </>
@@ -318,7 +319,7 @@ export default function Home() {
   const [newsList, setNewsList] = React.useState<News[]>([]);
   const [userCountry, setUserCountry] = React.useState<Country | null>(null);
   const { toast } = useToast();
-  const [isAlertDismissed, setIsAlertDismissed] = React.useState(false);
+  const [isAlertDismissed, setIsAlertDismissed] = React.useState(true);
   const [showDevInfoModal, setShowDevInfoModal] = React.useState(false);
   const [globalComments, setGlobalComments] = React.useState<Comment[]>([]);
   const [newGlobalComment, setNewGlobalComment] = React.useState('');
@@ -330,6 +331,12 @@ export default function Home() {
     const termsAccepted = localStorage.getItem('termsAccepted');
     if (!termsAccepted) {
       setShowTermsModal(true);
+    }
+
+    // Unregistered user alert
+    const alertDismissed = localStorage.getItem('unregisteredAlertDismissed');
+    if (alertDismissed !== 'true') {
+      setIsAlertDismissed(false);
     }
     
     // Dev info modal
@@ -398,6 +405,11 @@ export default function Home() {
     localStorage.setItem('termsAccepted', 'true');
     setShowTermsModal(false);
   };
+
+  const handleDismissAlert = () => {
+    localStorage.setItem('unregisteredAlertDismissed', 'true');
+    setIsAlertDismissed(true);
+  }
   
   const handleNewsUpdate = (updatedNews: News) => {
     const updatedList = newsList.map(news => news.id === updatedNews.id ? updatedNews : news);
@@ -501,7 +513,7 @@ export default function Home() {
                     <span>Anda belum terdaftar. Silakan registrasi.</span>
                      <RegisterCountryForm onCountryRegistered={handleCountryRegistered} />
                 </AlertDescription>
-                <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => setIsAlertDismissed(true)}>
+                <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={handleDismissAlert}>
                     <X className="h-4 w-4" />
                     <span className="sr-only">Tutup</span>
                 </Button>
@@ -585,10 +597,14 @@ export default function Home() {
                 Website ini dibuat oleh Andra.
               </DialogDescription>
             </DialogHeader>
-            <Button onClick={handleDismissDevInfo} variant="outline">Tutup</Button>
+            <DialogClose asChild>
+                <Button onClick={handleDismissDevInfo} variant="outline">Tutup</Button>
+            </DialogClose>
           </DialogContent>
         </Dialog>
 
     </div>
   );
 }
+
+    
