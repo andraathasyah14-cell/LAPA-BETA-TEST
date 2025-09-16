@@ -25,12 +25,15 @@ import {
   AlertTriangle,
   BookUser,
   Newspaper,
+  Home as HomeIcon,
+  PlusCircle,
 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
 interface Country {
@@ -42,8 +45,10 @@ interface Country {
 
 const RegisterCountryForm = ({
   onCountryRegistered,
+  children,
 }: {
   onCountryRegistered: (country: Country) => void;
+  children?: React.ReactNode;
 }) => {
   const [countryName, setCountryName] = React.useState('');
   const [ownerName, setOwnerName] = React.useState('');
@@ -66,7 +71,7 @@ const RegisterCountryForm = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Registrasi Negara</Button>
+        {children || <Button>Registrasi Negara</Button>}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -126,18 +131,24 @@ export default function Home() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem>
+              <HomeIcon className="mr-2 h-4 w-4" />
+              <span>Home</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
               <BookUser className="mr-2 h-4 w-4" />
               <span>List Negara</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Newspaper className="mr-2 h-4 w-4" />
-              <span>List Update</span>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              <span>Tambah Berita</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <RegisterCountryForm
-                onCountryRegistered={handleCountryRegistered}
-              />
-            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+             <RegisterCountryForm onCountryRegistered={handleCountryRegistered}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <Newspaper className="mr-2 h-4 w-4" />
+                    <span>Registrasi Negara</span>
+                </DropdownMenuItem>
+            </RegisterCountryForm>
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
